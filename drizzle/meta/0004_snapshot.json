@@ -1,8 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f9522df8-4601-44a4-ad94-6abb66688c03",
-  "prevId": "a35a2c4f-432f-490d-89b3-677ce2eeab12",
+  "id": "ec6674ba-8967-40a8-b75d-cbe4289c237e",
+  "prevId": "0f762b75-71a1-44d8-a81b-128382bffcec",
   "tables": {
     "personas": {
       "name": "personas",
@@ -52,8 +52,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "DNI": {
-          "name": "DNI",
+        "dni": {
+          "name": "dni",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -66,12 +66,13 @@
           "notNull": true,
           "autoincrement": false
         },
-        "contraseña": {
-          "name": "contraseña",
+        "password": {
+          "name": "password",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
+          "autoincrement": false,
+          "default": "'123456'"
         }
       },
       "indexes": {},

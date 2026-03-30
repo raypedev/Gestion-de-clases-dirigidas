@@ -2,16 +2,17 @@
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 export const personas = sqliteTable("personas", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  nombre: text("nombre").notNull(),
-  edad: integer("edad"),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    nombre: text("nombre").notNull(),
+    edad: integer("edad"),
 });
 
 export const usuarios = sqliteTable("usuarios", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  nombre: text("nombre").notNull(),
-  dni: text("DNI"),
-  correo: text("correo").notNull(),
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    nombre: text("nombre").notNull(),
+    dni: text("dni"),
+    correo: text("correo").notNull(),
+    password: text("password").notNull().default("123456"),
 });
 
 /*

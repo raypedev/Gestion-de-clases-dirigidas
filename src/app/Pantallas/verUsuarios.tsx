@@ -24,7 +24,7 @@ export const verUsuarios = () => {
           >
             <Text style={{ fontWeight: "bold" }}>{item.nombre}</Text>
             <Text>Email: {item.correo}</Text>
-            <Text>Email: {item.correo}</Text>
+            <Text>Contraseña: {item.password}</Text>
           </View>
         )}
         ListEmptyComponent={<Text>No hay usuarios registrados.</Text>}
