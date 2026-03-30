@@ -23,7 +23,7 @@ export const verUsuarios = () => {
             style={{ padding: 10, borderBottomWidth: 1, borderColor: "#ccc" }}
           >
             <Text style={{ fontWeight: "bold" }}>{item.nombre}</Text>
-            <Text>DNI: {item.dni}</Text>
+            <Text>Email: {item.correo}</Text>
             <Text>Email: {item.correo}</Text>
           </View>
         )}

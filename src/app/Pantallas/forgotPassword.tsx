@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function ForgotPassword() {
+export const ForgotPassword = () => {
     function navigateBack() {
         router.push({ pathname: "/" }); // Vuelve a la pantalla principal
     }
@@ -22,7 +22,7 @@ export default function ForgotPassword() {
             <SafeAreaView style={styles.safeArea}>
                 {/* Logo / Título */}
                 <View style={styles.header}>
-                    <Text style={styles.logoText}>Olvidaste tu contraseña</Text>
+                    <Text style={styles.logoText}>FITCONTROL</Text>
                 </View>
 
                 {/* Tarjeta de recuperación */}
@@ -49,6 +49,7 @@ export default function ForgotPassword() {
         </LinearGradient>
     );
 }
+export default ForgotPassword;
 
 const styles = StyleSheet.create({
     mainContainer: {

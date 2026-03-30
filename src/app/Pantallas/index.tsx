@@ -24,6 +24,10 @@ export const index = () => {
     router.push({ pathname: "/Pantallas/RegistroUsuario" });
   }
 
+  function navegarForgotPassword() {
+    router.push({ pathname: "/Pantallas/forgotPassword" });
+  }
+
   return (
     <LinearGradient
       colors={["#e0f7f9", "#ffffff", "#e0f7f9"]}
@@ -55,7 +59,7 @@ export const index = () => {
 
           <TextInput
             style={styles.input}
-            placeholder="USUARIO / EMAIL"
+            placeholder="EMAIL"
             placeholderTextColor="#888"
           />
 
@@ -74,7 +78,8 @@ export const index = () => {
             <Text style={styles.loginButtonText}>ENTRAR</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={navegarForgotPassword}>
             <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
 

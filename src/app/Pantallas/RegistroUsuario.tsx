@@ -19,6 +19,7 @@ export const RegistroUsuario = () => {
   const [textoNombre, setTextoNombre] = useState("");
   const [textoDNI, setTextoDNI] = useState("");
   const [textoMail, setTextoMail] = useState("");
+  const [textoContraseña, setTextoContraseña] = useState("")
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
@@ -78,6 +79,14 @@ export const RegistroUsuario = () => {
             style={styles.input}
             placeholder="mail"
             onChangeText={setTextoMail}
+            placeholderTextColor="#888"
+          />
+
+          <Text>Contraseña: </Text>
+          <TextInput
+            style={styles.input}
+            placeholder="contraseña"
+            onChangeText={setTextoContraseña}
             placeholderTextColor="#888"
           />
           <TouchableOpacity
