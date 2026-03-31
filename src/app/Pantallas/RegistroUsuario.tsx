@@ -13,6 +13,9 @@ import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
 import { useSQLiteContext } from "expo-sqlite";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { router } from "expo-router";
 
 export const RegistroUsuario = () => {
   // 1. Crear los estados para almacenar los valores
@@ -28,10 +31,32 @@ export const RegistroUsuario = () => {
   const { data: lista } = useLiveQuery(drizzleDb.select().from(usuarios));
 
   async function registrarPersona() {
-    await drizzleDb
-      .insert(usuarios)
-      .values({ nombre: textoNombre, dni: textoDNI, correo: textoMail });
+    // Validar que todos los campos estén llenos
+  if (!textoNombre || !textoDNI || !textoMail || !textoContraseña) {
+    Alert.alert("Error", "Por favor, rellena todos los campos");
+    return;
   }
+
+  // Insertar en SQLite usando Drizzle
+  await drizzleDb.insert(usuarios).values({
+    nombre: textoNombre,
+    dni: textoDNI,
+    correo: textoMail,
+    // password: textoContraseña,Por ahora trabajamos con el password default(123456)
+  });
+
+  // Mostrar mensaje y volver al login
+  Alert.alert(
+    "Registro completado",
+    "Usuario registrado correctamente",
+    [
+      {
+        text: "OK",
+        onPress: () => router.push({ pathname: "/" }), // vuelve al login
+      },
+    ]
+  );
+}
 
   return (
     <LinearGradient

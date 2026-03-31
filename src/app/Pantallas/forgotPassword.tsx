@@ -8,11 +8,42 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { eq } from "drizzle-orm";
+
+import { useSQLiteContext } from "expo-sqlite";
+import { Alert } from "react-native";
+import { usuarios } from "@/src/db/schema";
+import { useState } from "react";
 
 export const ForgotPassword = () => {
+
+    const db = useSQLiteContext();
+    const drizzleDb = drizzle(db, { schema: { usuarios } });
+    const [correo, setCorreo] = useState("");
+
     function navigateBack() {
         router.push({ pathname: "/" }); // Vuelve a la pantalla principal
     }
+
+    async function mostrarContraseña() {
+  if (!correo) {
+    Alert.alert("Error", "Introduce tu correo");
+    return;
+  }
+
+  const resultado = await drizzleDb
+    .select()
+    .from(usuarios)
+    .where(eq(usuarios.correo, correo));
+
+  if (resultado.length > 0) {
+    const pass = resultado[0].password;
+    Alert.alert("Tu contraseña es:", pass);
+  } else {
+    Alert.alert("Error", "No se encontró ningún usuario con ese correo");
+  }
+}
 
     return (
         <LinearGradient
@@ -33,10 +64,12 @@ export const ForgotPassword = () => {
                         style={styles.input}
                         placeholder="Correo electrónico"
                         placeholderTextColor="#888"
+                        value={correo}
+                        onChangeText={setCorreo}
                     />
 
-                    <TouchableOpacity style={styles.sendButton}>
-                        <Text style={styles.sendButtonText}>Enviar correo</Text>
+                    <TouchableOpacity style={styles.sendButton} onPress={mostrarContraseña}>
+                        <Text style={styles.sendButtonText}>Mostrar contraseña</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={navigateBack}>
