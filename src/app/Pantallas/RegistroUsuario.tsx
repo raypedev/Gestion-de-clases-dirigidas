@@ -11,11 +11,10 @@ import { usuarios } from "@/src/db/schema";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
-import { useSQLiteContext } from "expo-sqlite";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Alert } from "react-native";
-import { useNavigation } from "@react-navigation/native";
 import { router } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { Alert } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const RegistroUsuario = () => {
   // 1. Crear los estados para almacenar los valores
@@ -30,33 +29,37 @@ export const RegistroUsuario = () => {
   // SE ACTUALIZA SOLO cuando detecta un insert/update/delete.
   const { data: lista } = useLiveQuery(drizzleDb.select().from(usuarios));
 
-  async function registrarPersona() {
-    // Validar que todos los campos estén llenos
-  if (!textoNombre || !textoDNI || !textoMail || !textoContraseña) {
-    Alert.alert("Error", "Por favor, rellena todos los campos");
-    return;
+  function navigateBack() {
+    router.push({ pathname: "/" }); // Vuelve a la pantalla principal
   }
 
-  // Insertar en SQLite usando Drizzle
-  await drizzleDb.insert(usuarios).values({
-    nombre: textoNombre,
-    dni: textoDNI,
-    correo: textoMail,
-    // password: textoContraseña,Por ahora trabajamos con el password default(123456)
-  });
+  async function registrarPersona() {
+    // Validar que todos los campos estén llenos
+    if (!textoNombre || !textoDNI || !textoMail || !textoContraseña) {
+      Alert.alert("Error", "Por favor, rellena todos los campos");
+      return;
+    }
 
-  // Mostrar mensaje y volver al login
-  Alert.alert(
-    "Registro completado",
-    "Usuario registrado correctamente",
-    [
-      {
-        text: "OK",
-        onPress: () => router.push({ pathname: "/" }), // vuelve al login
-      },
-    ]
-  );
-}
+    // Insertar en SQLite usando Drizzle
+    await drizzleDb.insert(usuarios).values({
+      nombre: textoNombre,
+      dni: textoDNI,
+      correo: textoMail,
+      // password: textoContraseña,Por ahora trabajamos con el password default(123456)
+    });
+
+    // Mostrar mensaje y volver al login
+    Alert.alert(
+      "Registro completado",
+      "Usuario registrado correctamente",
+      [
+        {
+          text: "OK",
+          onPress: () => router.push({ pathname: "/" }), // vuelve al login
+        },
+      ]
+    );
+  }
 
   return (
     <LinearGradient
@@ -120,6 +123,12 @@ export const RegistroUsuario = () => {
           >
             <Text style={styles.loginButtonText}>Registrarse</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity onPress={navigateBack}>
+            <Text style={styles.forgotPassword}>
+              Volver al inicio de sesión
+            </Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
     </LinearGradient>
@@ -135,7 +144,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flex: 1.5, // Reducido un poco para dar espacio al login
+    flex: 1.5, 
     justifyContent: "center",
     alignItems: "center",
   },
@@ -160,18 +169,16 @@ const styles = StyleSheet.create({
   },
   // --- ESTILOS DE RESALTE ---
   formCard: {
-    backgroundColor: "#FFFFFF", // Blanco total para que destaque sobre el fondo cian
+    backgroundColor: "#FFFFFF", 
     marginHorizontal: 25,
     marginBottom: 60,
     paddingHorizontal: 25,
     paddingVertical: 35,
     borderRadius: 30,
-    // Sombra muy marcada (iOS)
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
-    // Sombra muy marcada (Android)
     elevation: 20,
     borderWidth: 1,
     borderColor: "#f0f0f0",
@@ -197,7 +204,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   loginButton: {
-    backgroundColor: "#0a3d62", // Azul marino oscuro para máximo contraste
+    backgroundColor: "#0a3d62", 
     borderRadius: 15,
     paddingVertical: 16,
     alignItems: "center",

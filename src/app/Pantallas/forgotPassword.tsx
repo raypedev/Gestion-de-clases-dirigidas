@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import {
@@ -8,13 +10,11 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { eq } from "drizzle-orm";
 
-import { useSQLiteContext } from "expo-sqlite";
-import { Alert } from "react-native";
 import { usuarios } from "@/src/db/schema";
+import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
+import { Alert } from "react-native";
 
 export const ForgotPassword = () => {
 
@@ -69,7 +69,7 @@ export const ForgotPassword = () => {
                     />
 
                     <TouchableOpacity style={styles.sendButton} onPress={mostrarContraseña}>
-                        <Text style={styles.sendButtonText}>Mostrar contraseña</Text>
+                        <Text style={styles.sendButtonText}>Enviar correo</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity onPress={navigateBack}>
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
         justifyContent: "flex-start",
     },
     header: {
-        flex: 0.6, // reducido para que ocupe menos espacio
+        flex: 0.6, 
         justifyContent: "center",
         alignItems: "center",
         marginTop: 20,
@@ -109,7 +109,7 @@ const styles = StyleSheet.create({
     formCard: {
         backgroundColor: "#FFFFFF",
         marginHorizontal: 25,
-        marginTop: 10, // reducido para acercar la tarjeta al título
+        marginTop: 10, 
         paddingHorizontal: 25,
         paddingVertical: 35,
         borderRadius: 30,

@@ -16,9 +16,9 @@ export const index = () => {
     router.push({ pathname: "/GuardarPersona" });
   }
 
-  function navegarVerUsuarios() {
-    router.push({ pathname: "/Pantallas/verUsuarios" });
-  }
+  //function navegarVerUsuarios() {
+   // router.push({ pathname: "/Pantallas/verUsuarios" });
+ // }
 
   function navegarRegistroUsuario() {
     router.push({ pathname: "/Pantallas/RegistroUsuario" });
@@ -28,6 +28,10 @@ export const index = () => {
     router.push({ pathname: "/Pantallas/forgotPassword" });
   }
 
+  function navegarListaActividades() {
+    router.push({ pathname: "/Pantallas/mostrarActividades" });
+  }
+  
   return (
     <LinearGradient
       colors={["#e0f7f9", "#ffffff", "#e0f7f9"]}
@@ -73,7 +77,7 @@ export const index = () => {
           {/* Botón ENTRAR más potente */}
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={navegarVerUsuarios}
+            onPress={navegarListaActividades}
           >
             <Text style={styles.loginButtonText}>ENTRAR</Text>
           </TouchableOpacity>
