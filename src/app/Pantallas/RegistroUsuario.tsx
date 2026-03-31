@@ -45,7 +45,7 @@ export const RegistroUsuario = () => {
       nombre: textoNombre,
       dni: textoDNI,
       correo: textoMail,
-      // password: textoContraseña,Por ahora trabajamos con el password default(123456)
+      password: textoContraseña
     });
 
     // Mostrar mensaje y volver al login

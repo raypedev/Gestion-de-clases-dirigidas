@@ -132,10 +132,6 @@ export const AnadirActividad = () => {
             >
               <Text style={styles.loginButtonText}>GUARDAR ACTIVIDAD</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity onPress={volver}>
-              <Text style={styles.cancelLink}>Cancelar y volver</Text>
-            </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>

@@ -29,7 +29,7 @@ export const index = () => {
   }
 
   function navegarListaActividades() {
-    router.push({ pathname: "/Pantallas/mostrarActividades" });
+    router.push({ pathname: "/Pantallas/AdminActivityList" });
   }
   
   return (

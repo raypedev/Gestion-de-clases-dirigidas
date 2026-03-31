@@ -12,7 +12,7 @@ export const usuarios = sqliteTable("usuarios", {
     nombre: text("nombre").notNull(),
     dni: text("dni"),
     correo: text("correo").notNull(),
-    password: text("password").notNull().default("123456"),
+    password: text("password").notNull(),
 });
 
 /*
