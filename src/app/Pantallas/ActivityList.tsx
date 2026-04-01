@@ -1,21 +1,22 @@
+import { useAppContext } from "@/src/context/AppContextProvider";
+import { inscripciones } from "@/src/db/schema";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from "react";
+import { useSQLiteContext } from "expo-sqlite";
+import React, { useState } from "react"; // Añadido useState
 import {
+    Alert,
+    Modal,
     ScrollView,
     StyleSheet,
     Text,
-    TouchableOpacity,
+    TouchableOpacity, // Añadido Modal
+    TouchableWithoutFeedback,
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Alert } from "react-native";
-import { inscripciones } from "@/src/db/schema";
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { useSQLiteContext } from "expo-sqlite";
-import { useAppContext } from "@/src/context/AppContextProvider";
-
 
 const ACTIVIDADES_DATA = [
     { id: "1", name: "YOGA", day: "LUNES", time: "6:00 AM", icon: "meditation" as any },
@@ -27,18 +28,24 @@ const ACTIVIDADES_DATA = [
 ];
 
 export const ListaActividades = () => {
-
     const db = useSQLiteContext();
     const drizzleDb = drizzle(db, { schema: { inscripciones } });
-    const { usuario } = useAppContext();
+    const { usuario, setUsuario } = useAppContext(); // Extraemos setUsuario para el logout
+    const [menuVisible, setMenuVisible] = useState(false); // Estado para el dropdown
 
     function volverAtras() {
         if (router.canGoBack()) {
             router.back();
         } else {
-            router.replace("/"); 
+            router.replace("/");
         }
     }
+
+    const cerrarSesion = () => {
+        setMenuVisible(false);
+        setUsuario(null);
+        router.replace("/");
+    };
 
     async function apuntarseActividad(idActividad: string) {
         if (!usuario) {
@@ -46,7 +53,6 @@ export const ListaActividades = () => {
             return;
         }
 
-        //  1. COMPROBAR SI YA ESTÁ APUNTADO
         const yaApuntado = await drizzleDb
             .select()
             .from(inscripciones)
@@ -54,8 +60,8 @@ export const ListaActividades = () => {
 
         const existe = yaApuntado.find(
             (i) =>
-            i.usuarioId === parseInt(usuario.id) &&
-            i.actividadId === parseInt(idActividad)
+                i.usuarioId === parseInt(usuario.id) &&
+                i.actividadId === parseInt(idActividad)
         );
 
         if (existe) {
@@ -63,24 +69,21 @@ export const ListaActividades = () => {
             return;
         }
 
-        //  2. SI NO ESTÁ APUNTADO → PREGUNTAR
         Alert.alert(
             "Confirmación",
             "¿Te quieres apuntar a esta actividad?",
             [
-            { text: "No", style: "cancel" },
-            {
-                text: "Sí",
-                onPress: async () => {
-                    console.log(await drizzleDb.select().from(inscripciones).all());
-                await drizzleDb.insert(inscripciones).values({
-                    usuarioId: parseInt(usuario.id),
-                    actividadId: parseInt(idActividad),
-                });
-
-                Alert.alert("OK", "Te has apuntado correctamente");
+                { text: "No", style: "cancel" },
+                {
+                    text: "Sí",
+                    onPress: async () => {
+                        await drizzleDb.insert(inscripciones).values({
+                            usuarioId: parseInt(usuario.id),
+                            actividadId: parseInt(idActividad),
+                        });
+                        Alert.alert("OK", "Te has apuntado correctamente");
+                    },
                 },
-            },
             ]
         );
     }
@@ -91,27 +94,85 @@ export const ListaActividades = () => {
             style={styles.mainContainer}
         >
             <SafeAreaView style={styles.safeArea}>
-                
+
+                {/* ICONO DE PERFIL */}
+                <TouchableOpacity
+                    style={styles.profileIconContainer}
+                    onPress={() => setMenuVisible(true)}
+                >
+                    <MaterialCommunityIcons name="account-circle" size={45} color="#ccc" />
+                </TouchableOpacity>
+
+                {/* MODAL DEL MENÚ DESPLEGABLE */}
+                <Modal
+                    visible={menuVisible}
+                    transparent={true}
+                    animationType="fade"
+                    onRequestClose={() => setMenuVisible(false)}
+                >
+                    <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+                        <View style={styles.modalOverlay}>
+                            <View style={styles.dropdownMenu}>
+                                <View style={styles.userInfoSection}>
+                                    <Text style={styles.userNameText}>{usuario?.nick || "Usuario"}</Text>
+                                </View>
+
+                                <View style={styles.menuDivider} />
+
+                                <TouchableOpacity
+                                    style={styles.menuItem}
+                                    onPress={() => {
+                                        setMenuVisible(false);
+                                        router.push("/Pantallas/UserProfile");
+                                    }}>
+                                    <Text style={styles.menuItemText}>Mi perfil</Text></TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.menuItem}
+                                    onPress={() => {
+                                        setMenuVisible(false);
+                                        router.push("/Pantallas/MyActivities");
+                                    }}
+                                >
+                                    <Text style={styles.menuItemText}>Mis actividades</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    style={styles.menuItem}
+                                    onPress={() => {
+                                        setMenuVisible(false);
+                                        router.push("/Pantallas/Help");
+                                    }}
+                                >
+                                    <Text style={styles.menuItemText}>Ayuda</Text>
+                                </TouchableOpacity>
+
+                                <View style={styles.menuDivider} />
+
+                                <TouchableOpacity style={styles.logoutItem} onPress={cerrarSesion}>
+                                    <MaterialCommunityIcons name="logout" size={18} color="#333" />
+                                    <Text style={styles.logoutText}>Cerrar sesión</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </TouchableWithoutFeedback>
+                </Modal>
+
                 <View style={styles.header}>
                     <Text style={styles.headerTitle}>LISTA DE</Text>
                     <Text style={styles.headerSubtitle}>ACTIVIDADES</Text>
                 </View>
 
-                {/* Contenedor principal de la tarjeta */}
                 <View style={styles.formCard}>
-                    
-                    {/* 1. ÁREA DE LISTA: El flex: 1 aquí es CLAVE para que no empuje los botones */}
                     <View style={{ flex: 1 }}>
                         <ScrollView
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={styles.scrollContent}
                         >
                             {ACTIVIDADES_DATA.map((actividad) => (
-                               <TouchableOpacity
+                                <TouchableOpacity
                                     key={actividad.id}
                                     style={styles.activityRow}
                                     onPress={() => apuntarseActividad(actividad.id)}
-                                    >
+                                >
                                     <View style={styles.iconContainer}>
                                         <MaterialCommunityIcons name={actividad.icon} size={30} color="#0a3d62" />
                                     </View>
@@ -134,13 +195,52 @@ export default ListaActividades;
 const styles = StyleSheet.create({
     mainContainer: { flex: 1 },
     safeArea: { flex: 1 },
-    header: { 
-        alignItems: "center", 
-        paddingVertical: 10 
+    profileIconContainer: {
+        position: 'absolute',
+        top: 50,
+        right: 20,
+        zIndex: 10,
+    },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
+    dropdownMenu: {
+        position: 'absolute',
+        top: 100,
+        right: 20,
+        backgroundColor: 'white',
+        borderRadius: 12,
+        width: 220,
+        paddingVertical: 15,
+        elevation: 15,
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+    },
+    userInfoSection: {
+        paddingHorizontal: 20,
+        paddingBottom: 5,
+    },
+    userNameText: { fontSize: 18, fontWeight: 'bold', color: '#000' },
+    userSubText: { fontSize: 13, color: '#888' },
+    menuDivider: { height: 1, backgroundColor: '#eee', marginVertical: 10 },
+    menuItem: { paddingVertical: 10, paddingHorizontal: 20 },
+    menuItemText: { fontSize: 15, color: '#333' },
+    logoutItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 10,
+        paddingHorizontal: 20
+    },
+    logoutText: { marginLeft: 10, fontSize: 15, color: '#333', fontWeight: '500' },
+    header: {
+        alignItems: "center",
+        paddingVertical: 10
     },
     headerTitle: { fontSize: 26, fontWeight: "900", color: "#0a3d62" },
     headerSubtitle: { fontSize: 32, fontWeight: "900", color: "#0a3d62", fontStyle: "italic", marginTop: -10 },
-    
     formCard: {
         flex: 1,
         backgroundColor: "#f4f4f4",
@@ -157,48 +257,18 @@ const styles = StyleSheet.create({
     scrollContent: {
         paddingBottom: 10,
     },
-    activityRow: { 
-        flexDirection: "row", 
-        alignItems: "center", 
-        paddingVertical: 15, 
-        borderBottomWidth: 1, 
-        borderBottomColor: "#e0e0e0" 
+    activityRow: {
+        flexDirection: "row",
+        alignItems: "center",
+        paddingVertical: 15,
+        borderBottomWidth: 1,
+        borderBottomColor: "#e0e0e0"
     },
-    iconContainer: { 
-        width: 50, height: 50, borderRadius: 12, backgroundColor: "#fff", 
-        justifyContent: "center", alignItems: "center", marginRight: 15 
+    iconContainer: {
+        width: 50, height: 50, borderRadius: 12, backgroundColor: "#fff",
+        justifyContent: "center", alignItems: "center", marginRight: 15
     },
     textContainer: { flex: 1 },
     activityName: { fontSize: 17, fontWeight: "bold", color: "#333" },
     activityTime: { fontSize: 13, color: "#777" },
-    
-    footer: {
-        marginTop: 10,
-        paddingTop: 10,
-        alignItems: 'center',
-        backgroundColor: "#f4f4f4", // Mismo color que la tarjeta para que no se note el corte
-    },
-    actionButton: {
-        backgroundColor: "#002851",
-        borderRadius: 20,
-        paddingVertical: 18,
-        alignItems: "center",
-        width: '100%',
-    },
-    actionButtonText: { 
-        fontSize: 18, 
-        fontWeight: "bold", 
-        color: "#fff",
-        textTransform: 'uppercase'
-    },
-    cancelContainer: {
-        marginTop: 15,
-        paddingVertical: 5,
-    },
-    cancelText: { 
-        color: "#888", 
-        fontSize: 15, 
-        textDecorationLine: "underline",
-        textAlign: 'center'
-    },
 });

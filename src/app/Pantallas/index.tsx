@@ -1,8 +1,13 @@
+import { useAppContext } from "@/src/context/AppContextProvider";
+import { usuarios } from "@/src/db/schema";
 import MaskedView from "@react-native-masked-view/masked-view";
+import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import React, { useState } from "react";
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -10,16 +15,11 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useAppContext } from "@/src/context/AppContextProvider";
-import { usuarios } from "@/src/db/schema";
-import { drizzle } from "drizzle-orm/expo-sqlite";
-import { useSQLiteContext } from "expo-sqlite";
-import { Alert } from "react-native";
 
 
 
 export const index = () => {
-  
+
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
   const { setUsuario } = useAppContext();
@@ -31,11 +31,11 @@ export const index = () => {
   }
 
   //function navegarVerUsuarios() {
-   // router.push({ pathname: "/Pantallas/verUsuarios" });
- // }
+  // router.push({ pathname: "/Pantallas/verUsuarios" });
+  // }
 
   function navegarRegistroUsuario() {
-    router.push({ pathname: "/Pantallas/RegistroUsuario" });
+    router.push({ pathname: "/Pantallas/registeruser" });
   }
 
   function navegarForgotPassword() {
@@ -47,28 +47,38 @@ export const index = () => {
   }
 
   async function hacerLogin() {
+    // 1. Obtener todos los usuarios de la DB
     const resultado = await drizzleDb.select().from(usuarios).all();
 
+    // 2. Buscar si las credenciales coinciden
     const usuarioEncontrado = resultado.find(
       (u) => u.correo === email && u.password === password
     );
 
+    // 3. CASO ESPECIAL: Hardcoded Admin (admin/admin)
+    // Si escriben 'admin' en ambos campos, van directo a la lista de admin
+    if (email === "admin" && password === "admin") {
+      setUsuario({ id: "0", nick: "Administrador" }); // Seteamos un usuario genérico de admin
+      router.push("/Pantallas/AdminActivityList");
+      return;
+    }
+
+    // 4. CASO NORMAL: Usuario de la Base de Datos
     if (!usuarioEncontrado) {
       Alert.alert("Error", "Credenciales incorrectas");
       return;
     }
 
-    // Aquí guardamos el usuario logueado en el contexto 
-    // para poder usarlo en otras pantallas sin necesidad de volver a consultar la base de datos
+    // Guardamos los datos en el contexto
     setUsuario({
       id: usuarioEncontrado.id.toString(),
       nick: usuarioEncontrado.nombre,
     });
 
-    // Navegar
+    // Si no es el "admin" maestro, va a la lista normal de usuarios
     router.push("/Pantallas/ActivityList");
   }
-  
+
   return (
     <LinearGradient
       colors={["#e0f7f9", "#ffffff", "#e0f7f9"]}
