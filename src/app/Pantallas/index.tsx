@@ -1,7 +1,7 @@
 import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -10,8 +10,22 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAppContext } from "@/src/context/AppContextProvider";
+import { usuarios } from "@/src/db/schema";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useSQLiteContext } from "expo-sqlite";
+import { Alert } from "react-native";
+
+
 
 export const index = () => {
+  
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema: { usuarios } });
+  const { setUsuario } = useAppContext();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   function navegarGuardarPersona() {
     router.push({ pathname: "/GuardarPersona" });
   }
@@ -30,6 +44,29 @@ export const index = () => {
 
   function navegarListaActividades() {
     router.push({ pathname: "/Pantallas/AdminActivityList" });
+  }
+
+  async function hacerLogin() {
+    const resultado = await drizzleDb.select().from(usuarios).all();
+
+    const usuarioEncontrado = resultado.find(
+      (u) => u.correo === email && u.password === password
+    );
+
+    if (!usuarioEncontrado) {
+      Alert.alert("Error", "Credenciales incorrectas");
+      return;
+    }
+
+    // Aquí guardamos el usuario logueado en el contexto 
+    // para poder usarlo en otras pantallas sin necesidad de volver a consultar la base de datos
+    setUsuario({
+      id: usuarioEncontrado.id.toString(),
+      nick: usuarioEncontrado.nombre,
+    });
+
+    // Navegar
+    router.push("/Pantallas/ActivityList");
   }
   
   return (
@@ -65,6 +102,7 @@ export const index = () => {
             style={styles.input}
             placeholder="EMAIL"
             placeholderTextColor="#888"
+            onChangeText={setEmail}
           />
 
           <TextInput
@@ -72,12 +110,13 @@ export const index = () => {
             placeholder="CONTRASEÑA"
             secureTextEntry={true}
             placeholderTextColor="#888"
+            onChangeText={setPassword}
           />
 
           {/* Botón ENTRAR más potente */}
           <TouchableOpacity
             style={styles.loginButton}
-            onPress={navegarListaActividades}
+            onPress={hacerLogin}
           >
             <Text style={styles.loginButtonText}>ENTRAR</Text>
           </TouchableOpacity>

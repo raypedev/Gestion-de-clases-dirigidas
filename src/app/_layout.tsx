@@ -7,9 +7,36 @@ import React, { Suspense } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import migrations from "../../drizzle/migrations";
 import AppContextProvider from "../context/AppContextProvider";
-type Props = {};
+import { usuarios, inscripciones } from "../db/schema";
+
 export const DATABASE_NAME = "prueba4Drizzle";
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function crearTablas(db: any) {
+  const drizzleDb = drizzle(db, { schema: { usuarios, inscripciones } });
+
+  // Crear tabla usuarios si no existe
+  await drizzleDb.run(sql`
+    CREATE TABLE IF NOT EXISTS usuarios (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nombre TEXT NOT NULL,
+      dni TEXT,
+      correo TEXT NOT NULL,
+      password TEXT NOT NULL
+    );
+  `);
+
+  // Crear tabla inscripciones si no existe
+  await drizzleDb.run(sql`
+    CREATE TABLE IF NOT EXISTS inscripciones (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      usuario_id INTEGER,
+      actividad_id INTEGER
+    );
+  `);
+
+  console.log("Tablas aseguradas");
+}
+
 function LoadingScreen() {
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -18,7 +45,8 @@ function LoadingScreen() {
     </View>
   );
 }
-const RootLayout = (props: Props) => {
+
+export default function RootLayout() {
   return (
     <AppContextProvider>
       <Suspense fallback={<LoadingScreen />}>
@@ -28,17 +56,13 @@ const RootLayout = (props: Props) => {
           useSuspense
           onInit={async (database) => {
             try {
-              console.log("Simulando carga lenta...");
-              await sleep(2000); // 2 segundos retraso
-              const db = drizzle(database);
-              await migrate(db, migrations);
-              console.log("Migration success");
-
-              // Activa FK aquí (después de migraciones)
+              const db = drizzle(database, { schema: { usuarios, inscripciones } });
+              await crearTablas(database); // Asegura que las tablas existen antes de migrar
+              await migrate(db, migrations); // crea todas las tablas
               await db.run(sql`PRAGMA foreign_keys = ON`);
-              console.log("Foreign keys enabled");
+              console.log("DB lista con migraciones y FK activadas");
             } catch (error) {
-              console.error("Migration error", error);
+              console.error("Error migrando la DB", error);
             }
           }}
         >
@@ -47,6 +71,4 @@ const RootLayout = (props: Props) => {
       </Suspense>
     </AppContextProvider>
   );
-};
-
-export default RootLayout;
+}

@@ -14,12 +14,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Definimos los iconos disponibles (Todos de Material para evitar fallos de librerías)
 const ICONOS_DISPONIBLES = [
-  { id: "1", name: "meditation" },       // Yoga
-  { id: "2", name: "human-female-dance" }, // Zumba
-  { id: "3", name: "bike" },              // Spinning
-  { id: "4", name: "weight-lifter" },     // GAP
-  { id: "5", name: "run-fast" },          // Cardio/Running
-  { id: "6", name: "arm-flex" },          // Fuerza
+  { id: "1", name: "meditation", label:"Yoga" },       // Yoga
+  { id: "2", name: "human-female-dance", label:"Zumba" }, // Zumba
+  { id: "3", name: "bike", label:"Spinning" },              // Spinning
+  { id: "4", name: "weight-lifter", label:"GAP" },     // GAP
+  { id: "5", name: "run-fast", label:"Cardio/Running" },          // Cardio/Running
+  { id: "6", name: "arm-flex", label:"Fuerza" },          // Fuerza
 ];
 
 export const AnadirActividad = () => {
@@ -122,7 +122,9 @@ export const AnadirActividad = () => {
                     size={45} 
                     color="#0a3d62" 
                   />
+                  
                </View>
+               <Text style={styles.sectionLabel}>{iconoSeleccionado.label}</Text>
             </View>
 
             {/* BOTÓN GUARDAR */}

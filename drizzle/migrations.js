@@ -6,6 +6,7 @@ import m0001 from './0001_brief_mandrill.sql';
 import m0002 from './0002_sleepy_ink.sql';
 import m0003 from './0003_green_silverclaw.sql';
 import m0004 from './0004_breezy_unus.sql';
+import m0005 from './0005_stealthy_lynx.sql';
 
   export default {
     journal,
@@ -14,7 +15,8 @@ import m0004 from './0004_breezy_unus.sql';
 m0001,
 m0002,
 m0003,
-m0004
+m0004,
+m0005,
     }
   }
   

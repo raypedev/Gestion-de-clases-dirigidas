@@ -10,6 +10,12 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Alert } from "react-native";
+import { inscripciones } from "@/src/db/schema";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useSQLiteContext } from "expo-sqlite";
+import { useAppContext } from "@/src/context/AppContextProvider";
+
 
 const ACTIVIDADES_DATA = [
     { id: "1", name: "YOGA", day: "LUNES", time: "6:00 AM", icon: "meditation" as any },
@@ -22,12 +28,61 @@ const ACTIVIDADES_DATA = [
 
 export const ListaActividades = () => {
 
+    const db = useSQLiteContext();
+    const drizzleDb = drizzle(db, { schema: { inscripciones } });
+    const { usuario } = useAppContext();
+
     function volverAtras() {
         if (router.canGoBack()) {
             router.back();
         } else {
             router.replace("/"); 
         }
+    }
+
+    async function apuntarseActividad(idActividad: string) {
+        if (!usuario) {
+            Alert.alert("Error", "No hay usuario logueado");
+            return;
+        }
+
+        //  1. COMPROBAR SI YA ESTÁ APUNTADO
+        const yaApuntado = await drizzleDb
+            .select()
+            .from(inscripciones)
+            .all();
+
+        const existe = yaApuntado.find(
+            (i) =>
+            i.usuarioId === parseInt(usuario.id) &&
+            i.actividadId === parseInt(idActividad)
+        );
+
+        if (existe) {
+            Alert.alert("Aviso", "Ya estás apuntado a esta actividad");
+            return;
+        }
+
+        //  2. SI NO ESTÁ APUNTADO → PREGUNTAR
+        Alert.alert(
+            "Confirmación",
+            "¿Te quieres apuntar a esta actividad?",
+            [
+            { text: "No", style: "cancel" },
+            {
+                text: "Sí",
+                onPress: async () => {
+                    console.log(await drizzleDb.select().from(inscripciones).all());
+                await drizzleDb.insert(inscripciones).values({
+                    usuarioId: parseInt(usuario.id),
+                    actividadId: parseInt(idActividad),
+                });
+
+                Alert.alert("OK", "Te has apuntado correctamente");
+                },
+            },
+            ]
+        );
     }
 
     return (
@@ -52,7 +107,11 @@ export const ListaActividades = () => {
                             contentContainerStyle={styles.scrollContent}
                         >
                             {ACTIVIDADES_DATA.map((actividad) => (
-                                <View key={actividad.id} style={styles.activityRow}>
+                               <TouchableOpacity
+                                    key={actividad.id}
+                                    style={styles.activityRow}
+                                    onPress={() => apuntarseActividad(actividad.id)}
+                                    >
                                     <View style={styles.iconContainer}>
                                         <MaterialCommunityIcons name={actividad.icon} size={30} color="#0a3d62" />
                                     </View>
@@ -60,23 +119,9 @@ export const ListaActividades = () => {
                                         <Text style={styles.activityName}>{actividad.name}</Text>
                                         <Text style={styles.activityTime}>{actividad.day}, {actividad.time}</Text>
                                     </View>
-                                </View>
+                                </TouchableOpacity>
                             ))}
                         </ScrollView>
-                    </View>
-
-                    {/* 2. SECCIÓN DE BOTONES: Ahora se quedará anclada al final de la tarjeta */}
-                    <View style={styles.footer}>
-                        <TouchableOpacity
-                            style={styles.actionButton}
-                            onPress={() => router.push("/Pantallas/addActividad")}
-                        >
-                            <Text style={styles.actionButtonText}>AÑADIR ACTIVIDAD</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity onPress={volverAtras} style={styles.cancelContainer}>
-                            <Text style={styles.cancelText}>Cancelar y volver</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
             </SafeAreaView>
