@@ -21,6 +21,14 @@ export const inscripciones = sqliteTable("inscripciones", {
   actividadId: integer("actividad_id"),
 });
 
+export const actividades = sqliteTable("actividades", {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    nombre: text("nombre").notNull(),
+    dia: text("dia").notNull(),
+    hora: text("hora").notNull(),
+    icon: text("icon"),
+});
+
 /*
 export const categorias = sqliteTable('categorias', {
     id: integer('id').primaryKey({ autoIncrement: true }),

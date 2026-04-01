@@ -3,6 +3,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,14 +13,18 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Definimos los iconos disponibles (Todos de Material para evitar fallos de librerías)
+// --- IMPORTACIONES DE BASE DE DATOS ---
+import { actividades } from "@/src/db/schema";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { useSQLiteContext } from "expo-sqlite";
+
 const ICONOS_DISPONIBLES = [
-  { id: "1", name: "meditation", label:"Yoga" },       // Yoga
-  { id: "2", name: "human-female-dance", label:"Zumba" }, // Zumba
-  { id: "3", name: "bike", label:"Spinning" },              // Spinning
-  { id: "4", name: "weight-lifter", label:"GAP" },     // GAP
-  { id: "5", name: "run-fast", label:"Cardio/Running" },          // Cardio/Running
-  { id: "6", name: "arm-flex", label:"Fuerza" },          // Fuerza
+  { id: "1", name: "meditation", label: "Yoga" },
+  { id: "2", name: "human-female-dance", label: "Zumba" },
+  { id: "3", name: "bike", label: "Spinning" },
+  { id: "4", name: "weight-lifter", label: "GAP" },
+  { id: "5", name: "run-fast", label: "Cardio/Running" },
+  { id: "6", name: "arm-flex", label: "Fuerza" },
 ];
 
 export const AnadirActividad = () => {
@@ -28,15 +33,39 @@ export const AnadirActividad = () => {
   const [hora, setHora] = useState("");
   const [iconoSeleccionado, setIconoSeleccionado] = useState(ICONOS_DISPONIBLES[0]);
 
-  function guardarActividad() {
-    // Aquí puedes conectar con tu base de datos o estado global
-    console.log("Guardando actividad:", {
-      nombre,
-      dia,
-      hora,
-      icon: iconoSeleccionado.name,
-    });
-    router.back();
+  // Inicializamos la conexión a la BD
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db);
+
+  // FUNCIÓN PARA GUARDAR EN SQLITE
+  async function guardarActividad() {
+    // 1. Validación de campos vacíos
+    if (!nombre.trim() || !dia.trim() || !hora.trim()) {
+      Alert.alert("Campos incompletos", "Por favor, rellena todos los datos antes de guardar.");
+      return;
+    }
+
+    try {
+      console.log("Intentando guardar actividad...");
+
+      // 2. INSERT REAL USANDO DRIZZLE
+      await drizzleDb.insert(actividades).values({
+        nombre: nombre.trim().toUpperCase(),
+        dia: dia.trim().toUpperCase(),
+        hora: hora.trim().toUpperCase(),
+        icon: iconoSeleccionado.name,
+      });
+
+      // 3. Éxito
+      Alert.alert("¡Éxito!", "La actividad se ha guardado correctamente.", [
+        { text: "OK", onPress: () => router.back() }
+      ]);
+
+    } catch (error: any) {
+      // 4. Captura de errores (Si sale "no such table", debes borrar la app y reinstalar)
+      console.error("Error detallado:", error);
+      Alert.alert("Error al guardar", `Mensaje: ${error.message}`);
+    }
   }
 
   function volver() {
@@ -49,7 +78,7 @@ export const AnadirActividad = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* CABECERA CON BOTÓN VOLVER */}
+        {/* CABECERA */}
         <View style={styles.header}>
           <TouchableOpacity onPress={volver} style={styles.backButton}>
             <MaterialCommunityIcons name="arrow-left" size={30} color="#0a3d62" />
@@ -67,7 +96,7 @@ export const AnadirActividad = () => {
           <View style={styles.formCard}>
             <Text style={styles.cardLabel}>Detalles de la clase</Text>
 
-            {/* INPUTS ESTILO FITCONTROL */}
+            {/* INPUTS */}
             <TextInput
               style={styles.input}
               placeholder="NOMBRE (EJ. YOGA, ZUMBA...)"
@@ -113,7 +142,7 @@ export const AnadirActividad = () => {
               ))}
             </View>
 
-            {/* VISTA PREVIA DEL ICONO SELECCIONADO */}
+            {/* VISTA PREVIA */}
             <View style={styles.previewContainer}>
                <Text style={styles.iconLabel}>Vista previa:</Text>
                <View style={styles.iconCircle}>
@@ -122,7 +151,6 @@ export const AnadirActividad = () => {
                     size={45} 
                     color="#0a3d62" 
                   />
-                  
                </View>
                <Text style={styles.sectionLabel}>{iconoSeleccionado.label}</Text>
             </View>
@@ -144,12 +172,8 @@ export const AnadirActividad = () => {
 export default AnadirActividad;
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
+  mainContainer: { flex: 1 },
+  safeArea: { flex: 1 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -186,7 +210,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingVertical: 30,
     borderRadius: 30,
-    // Sombras potentes de tu estilo original
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.2,
@@ -279,12 +302,5 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#fff",
     letterSpacing: 1,
-  },
-  cancelLink: {
-    textAlign: "center",
-    marginTop: 20,
-    color: "#777",
-    fontSize: 14,
-    textDecorationLine: "underline",
   },
 });
