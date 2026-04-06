@@ -1,14 +1,17 @@
+import { useAppContext } from "@/src/context/AppContextProvider"; // <-- Añadido
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
+  Modal, // <-- Añadido
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
+  TouchableWithoutFeedback, // <-- Añadido
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -28,27 +31,34 @@ const ICONOS_DISPONIBLES = [
 ];
 
 export const AnadirActividad = () => {
+  const { usuario, setUsuario } = useAppContext(); // <-- Añadido
+  const [menuVisible, setMenuVisible] = useState(false); // <-- Añadido
   const [nombre, setNombre] = useState("");
   const [dia, setDia] = useState("");
   const [hora, setHora] = useState("");
-  const [iconoSeleccionado, setIconoSeleccionado] = useState(ICONOS_DISPONIBLES[0]);
+  const [iconoSeleccionado, setIconoSeleccionado] = useState(
+    ICONOS_DISPONIBLES[0],
+  );
 
-  // Inicializamos la conexión a la BD
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
 
-  // FUNCIÓN PARA GUARDAR EN SQLITE
+  const cerrarSesion = () => {
+    setMenuVisible(false);
+    setUsuario(null);
+    router.replace("/");
+  };
+
   async function guardarActividad() {
-    // 1. Validación de campos vacíos
     if (!nombre.trim() || !dia.trim() || !hora.trim()) {
-      Alert.alert("Campos incompletos", "Por favor, rellena todos los datos antes de guardar.");
+      Alert.alert(
+        "Campos incompletos",
+        "Por favor, rellena todos los datos antes de guardar.",
+      );
       return;
     }
 
     try {
-      console.log("Intentando guardar actividad...");
-
-      // 2. INSERT REAL USANDO DRIZZLE
       await drizzleDb.insert(actividades).values({
         nombre: nombre.trim().toUpperCase(),
         dia: dia.trim().toUpperCase(),
@@ -56,20 +66,13 @@ export const AnadirActividad = () => {
         icon: iconoSeleccionado.name,
       });
 
-      // 3. Éxito
       Alert.alert("¡Éxito!", "La actividad se ha guardado correctamente.", [
-        { text: "OK", onPress: () => router.back() }
+        { text: "OK", onPress: () => router.back() },
       ]);
-
     } catch (error: any) {
-      // 4. Captura de errores (Si sale "no such table", debes borrar la app y reinstalar)
       console.error("Error detallado:", error);
       Alert.alert("Error al guardar", `Mensaje: ${error.message}`);
     }
-  }
-
-  function volver() {
-    router.back();
   }
 
   return (
@@ -78,10 +81,59 @@ export const AnadirActividad = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
+        {/* ICONO DE PERFIL (Esquina superior derecha) */}
+        <TouchableOpacity
+          style={styles.profileIconContainer}
+          onPress={() => setMenuVisible(true)}
+        >
+          <MaterialCommunityIcons
+            name="account-circle"
+            size={45}
+            color="#ccc"
+          />
+        </TouchableOpacity>
+
+        {/* MODAL DE ADMINISTRADOR (Igual al de la imagen) */}
+        <Modal visible={menuVisible} transparent animationType="fade">
+          <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.dropdownMenu}>
+                <View style={styles.userInfoSection}>
+                  <Text style={styles.userNameText}>
+                    {usuario?.nick || "Administrador"}
+                  </Text>
+                  <Text style={styles.userSubText}>
+                    Panel de Administración
+                  </Text>
+                </View>
+                <View style={styles.menuDivider} />
+                <TouchableOpacity
+                  style={styles.logoutItem}
+                  onPress={cerrarSesion}
+                >
+                  <MaterialCommunityIcons
+                    name="logout"
+                    size={18}
+                    color="#0a3d62"
+                  />
+                  <Text style={styles.logoutText}>Cerrar sesión</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
         {/* CABECERA */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={volver} style={styles.backButton}>
-            <MaterialCommunityIcons name="arrow-left" size={30} color="#0a3d62" />
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <MaterialCommunityIcons
+              name="arrow-left"
+              size={30}
+              color="#0a3d62"
+            />
           </TouchableOpacity>
           <View style={styles.headerTextContainer}>
             <Text style={styles.headerTitle}>NUEVA</Text>
@@ -89,14 +141,13 @@ export const AnadirActividad = () => {
           </View>
         </View>
 
-        <ScrollView 
-          contentContainerStyle={{ flexGrow: 1 }} 
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.formCard}>
             <Text style={styles.cardLabel}>Detalles de la clase</Text>
 
-            {/* INPUTS */}
             <TextInput
               style={styles.input}
               placeholder="NOMBRE (EJ. YOGA, ZUMBA...)"
@@ -121,7 +172,6 @@ export const AnadirActividad = () => {
               onChangeText={setHora}
             />
 
-            {/* SELECTOR DE ICONOS */}
             <Text style={styles.sectionLabel}>Selecciona un icono:</Text>
             <View style={styles.iconGrid}>
               {ICONOS_DISPONIBLES.map((item) => (
@@ -129,33 +179,34 @@ export const AnadirActividad = () => {
                   key={item.id}
                   style={[
                     styles.iconOption,
-                    iconoSeleccionado.id === item.id && styles.iconOptionSelected
+                    iconoSeleccionado.id === item.id &&
+                      styles.iconOptionSelected,
                   ]}
                   onPress={() => setIconoSeleccionado(item)}
                 >
-                  <MaterialCommunityIcons 
-                    name={item.name as any} 
-                    size={26} 
-                    color={iconoSeleccionado.id === item.id ? "#fff" : "#0a3d62"} 
+                  <MaterialCommunityIcons
+                    name={item.name as any}
+                    size={26}
+                    color={
+                      iconoSeleccionado.id === item.id ? "#fff" : "#0a3d62"
+                    }
                   />
                 </TouchableOpacity>
               ))}
             </View>
 
-            {/* VISTA PREVIA */}
             <View style={styles.previewContainer}>
-               <Text style={styles.iconLabel}>Vista previa:</Text>
-               <View style={styles.iconCircle}>
-                  <MaterialCommunityIcons 
-                    name={iconoSeleccionado.name as any} 
-                    size={45} 
-                    color="#0a3d62" 
-                  />
-               </View>
-               <Text style={styles.sectionLabel}>{iconoSeleccionado.label}</Text>
+              <Text style={styles.iconLabel}>Vista previa:</Text>
+              <View style={styles.iconCircle}>
+                <MaterialCommunityIcons
+                  name={iconoSeleccionado.name as any}
+                  size={45}
+                  color="#0a3d62"
+                />
+              </View>
+              <Text style={styles.sectionLabel}>{iconoSeleccionado.label}</Text>
             </View>
 
-            {/* BOTÓN GUARDAR */}
             <TouchableOpacity
               style={styles.loginButton}
               onPress={guardarActividad}
@@ -174,27 +225,65 @@ export default AnadirActividad;
 const styles = StyleSheet.create({
   mainContainer: { flex: 1 },
   safeArea: { flex: 1 },
+  // ESTILOS DEL ICONO DE PERFIL
+  profileIconContainer: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    zIndex: 20,
+  },
+  // ESTILOS DEL MODAL (COMO EN TU IMAGEN)
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.1)",
+  },
+  dropdownMenu: {
+    position: "absolute",
+    top: 100,
+    right: 20,
+    backgroundColor: "white",
+    borderRadius: 12,
+    width: 220,
+    paddingVertical: 15,
+    elevation: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+  },
+  userInfoSection: { paddingHorizontal: 20, paddingBottom: 5 },
+  userNameText: { fontSize: 18, fontWeight: "bold", color: "#000" },
+  userSubText: { fontSize: 13, color: "#888" },
+  menuDivider: { height: 1, backgroundColor: "#eee", marginVertical: 10 },
+  logoutItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  logoutText: { marginLeft: 10, color: "#0a3d62", fontWeight: "bold" },
+
+  // RESTO DE ESTILOS EXISTENTES
   header: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginVertical: 15,
+    marginTop: 25,
+    marginBottom: 15,
   },
   backButton: {
     padding: 10,
-    position: "absolute",
-    left: 10,
     zIndex: 10,
   },
   headerTextContainer: {
     flex: 1,
+    marginRight: 40,
     alignItems: "center",
   },
   headerTitle: {
     fontSize: 28,
     fontWeight: "900",
     color: "#0a3d62",
-    letterSpacing: 1,
   },
   headerSubtitle: {
     fontSize: 34,
@@ -210,10 +299,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingVertical: 30,
     borderRadius: 30,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 15 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
     elevation: 20,
     borderWidth: 1,
     borderColor: "#f0f0f0",
@@ -241,14 +326,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 12,
     fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#eee",
     color: "#333",
   },
   iconGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
     gap: 12,
     marginBottom: 20,
   },
@@ -256,15 +339,12 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 12,
-    backgroundColor: '#f0f9fa',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#0a3d6220',
+    backgroundColor: "#f0f9fa",
+    justifyContent: "center",
+    alignItems: "center",
   },
   iconOptionSelected: {
-    backgroundColor: '#0a3d62',
-    borderColor: '#0a3d62',
+    backgroundColor: "#0a3d62",
   },
   previewContainer: {
     alignItems: "center",
@@ -291,16 +371,10 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: "#0a3d62",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 8,
   },
   loginButtonText: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
-    letterSpacing: 1,
   },
 });

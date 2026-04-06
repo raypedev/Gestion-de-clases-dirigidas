@@ -1,31 +1,36 @@
+import { useAppContext } from "@/src/context/AppContextProvider";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
-    ActivityIndicator,
-    FlatList,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // --- BASE DE DATOS ---
-// Asegúrate de que 'usuarios' esté exportado en tu schema.ts
 import { usuarios } from "@/src/db/schema";
+import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 
-export const userList = () => {
+export const UserList = () => {
+  const { usuario, setUsuario } = useAppContext();
+  const [menuVisible, setMenuVisible] = useState(false);
   const [listaUsuarios, setListaUsuarios] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
 
-  // Función para cargar usuarios desde SQLite
   const cargarUsuarios = async () => {
     try {
       setCargando(true);
@@ -38,12 +43,35 @@ export const userList = () => {
     }
   };
 
-  // Recargar cada vez que la pantalla gane el foco
   useFocusEffect(
     useCallback(() => {
       cargarUsuarios();
     }, []),
   );
+
+  const cerrarSesion = () => {
+    setMenuVisible(false);
+    setUsuario(null);
+    router.replace("/");
+  };
+
+  const eliminarUsuario = (id: number, nombre: string) => {
+    Alert.alert("Eliminar Usuario", `¿Estás seguro de borrar a ${nombre}?`, [
+      { text: "Cancelar", style: "cancel" },
+      {
+        text: "Eliminar",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            await drizzleDb.delete(usuarios).where(eq(usuarios.id, id));
+            cargarUsuarios();
+          } catch (error) {
+            Alert.alert("Error", "No se pudo eliminar al usuario");
+          }
+        },
+      },
+    ]);
+  };
 
   return (
     <LinearGradient
@@ -51,7 +79,48 @@ export const userList = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* Encabezado igual al de Actividades */}
+        {/* ICONO DE PERFIL */}
+        <TouchableOpacity
+          style={styles.profileIconContainer}
+          onPress={() => setMenuVisible(true)}
+        >
+          <MaterialCommunityIcons
+            name="account-circle"
+            size={45}
+            color="#ccc"
+          />
+        </TouchableOpacity>
+
+        {/* MODAL ADMINISTRADOR */}
+        <Modal visible={menuVisible} transparent animationType="fade">
+          <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={styles.dropdownMenu}>
+                <View style={styles.userInfoSection}>
+                  <Text style={styles.userNameText}>
+                    {usuario?.nick || "Administrador"}
+                  </Text>
+                  <Text style={styles.userSubText}>
+                    Panel de Administración
+                  </Text>
+                </View>
+                <View style={styles.menuDivider} />
+                <TouchableOpacity
+                  style={styles.logoutItem}
+                  onPress={cerrarSesion}
+                >
+                  <MaterialCommunityIcons
+                    name="logout"
+                    size={18}
+                    color="#0a3d62"
+                  />
+                  <Text style={styles.logoutText}>Cerrar sesión</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
         <View style={styles.header}>
           <Text style={styles.headerTitle}>USUARIOS</Text>
           <Text style={styles.headerSubtitle}>REGISTRADOS</Text>
@@ -86,16 +155,40 @@ export const userList = () => {
                     </Text>
                   </View>
 
-                  <MaterialCommunityIcons
-                    name="chevron-right"
-                    size={20}
-                    color="#ccc"
-                  />
+                  <View style={styles.actionIcons}>
+                    {/* EDITAR */}
+                    <TouchableOpacity
+                      onPress={() =>
+                        router.push({
+                          pathname: "/Pantallas/editUser",
+                          params: { id: item.id },
+                        })
+                      }
+                      style={{ marginRight: 10 }}
+                    >
+                      <MaterialCommunityIcons
+                        name="pencil"
+                        size={22}
+                        color="#0a3d62"
+                      />
+                    </TouchableOpacity>
+
+                    {/* BORRAR */}
+                    <TouchableOpacity
+                      onPress={() => eliminarUsuario(item.id, item.nombre)}
+                    >
+                      <MaterialCommunityIcons
+                        name="trash-can-outline"
+                        size={22}
+                        color="#e74c3c"
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
               ListEmptyComponent={
                 <Text style={styles.emptyText}>
-                  No hay usuarios en la base de datos.
+                  No hay usuarios registrados.
                 </Text>
               }
             />
@@ -121,12 +214,40 @@ export const userList = () => {
   );
 };
 
-export default userList;
+export default UserList;
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1 },
   safeArea: { flex: 1 },
-  header: { alignItems: "center", paddingVertical: 20, marginTop: 20 },
+  profileIconContainer: {
+    position: "absolute",
+    top: 50,
+    right: 20,
+    zIndex: 10,
+  },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.05)" },
+  dropdownMenu: {
+    position: "absolute",
+    top: 100,
+    right: 20,
+    backgroundColor: "white",
+    borderRadius: 12,
+    width: 220,
+    paddingVertical: 15,
+    elevation: 15,
+  },
+  userInfoSection: { paddingHorizontal: 20, paddingBottom: 5 },
+  userNameText: { fontSize: 18, fontWeight: "bold" },
+  userSubText: { fontSize: 13, color: "#888" },
+  menuDivider: { height: 1, backgroundColor: "#eee", marginVertical: 10 },
+  logoutItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  logoutText: { marginLeft: 10, color: "#0a3d62", fontWeight: "bold" },
+  header: { alignItems: "center", paddingVertical: 10, marginTop: 10 },
   headerTitle: { fontSize: 24, fontWeight: "900", color: "#0a3d62" },
   headerSubtitle: {
     fontSize: 30,
@@ -143,10 +264,6 @@ const styles = StyleSheet.create({
     borderRadius: 35,
     padding: 20,
     elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
   },
   center: { flex: 1, justifyContent: "center", alignItems: "center" },
   userRow: {
@@ -169,16 +286,9 @@ const styles = StyleSheet.create({
   userName: { fontSize: 16, fontWeight: "bold", color: "#333" },
   userEmail: { fontSize: 14, color: "#666", marginTop: 2 },
   userPassword: { fontSize: 12, color: "#aaa", fontStyle: "italic" },
+  actionIcons: { flexDirection: "row", alignItems: "center" },
   emptyText: { textAlign: "center", color: "#999", marginTop: 40 },
-  backButton: {
-    backgroundColor: "#0a3d62",
-    paddingVertical: 15,
-    borderRadius: 20,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  cancelContainer: { marginTop: 15 },
-  backButtonText: { color: "#fff", fontWeight: "bold", fontSize: 14 },
+  footer: { marginTop: 10, alignItems: "center" },
   actionButton: {
     backgroundColor: "#002851",
     borderRadius: 20,
@@ -187,6 +297,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   actionButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  cancelContainer: { marginTop: 15 },
   cancelText: { color: "#888", textDecorationLine: "underline" },
-  footer: { marginTop: 10, alignItems: "center" },
 });

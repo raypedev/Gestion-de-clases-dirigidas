@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import {
+  Alert,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 import { usuarios } from "@/src/db/schema";
@@ -13,7 +14,7 @@ import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import { Alert } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export const RegistroUsuario = () => {
@@ -21,7 +22,7 @@ export const RegistroUsuario = () => {
   const [textoNombre, setTextoNombre] = useState("");
   const [textoDNI, setTextoDNI] = useState("");
   const [textoMail, setTextoMail] = useState("");
-  const [textoContraseña, setTextoContraseña] = useState("")
+  const [textoContraseña, setTextoContraseña] = useState("");
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
@@ -45,20 +46,16 @@ export const RegistroUsuario = () => {
       nombre: textoNombre,
       dni: textoDNI,
       correo: textoMail,
-      password: textoContraseña
+      password: textoContraseña,
     });
 
     // Mostrar mensaje y volver al login
-    Alert.alert(
-      "Registro completado",
-      "Usuario registrado correctamente",
-      [
-        {
-          text: "OK",
-          onPress: () => router.push({ pathname: "/" }), // vuelve al login
-        },
-      ]
-    );
+    Alert.alert("Registro completado", "Usuario registrado correctamente", [
+      {
+        text: "OK",
+        onPress: () => router.push({ pathname: "/" }), // vuelve al login
+      },
+    ]);
   }
 
   return (
@@ -144,7 +141,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flex: 1.5, 
+    flex: 1.5,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -169,7 +166,7 @@ const styles = StyleSheet.create({
   },
   // --- ESTILOS DE RESALTE ---
   formCard: {
-    backgroundColor: "#FFFFFF", 
+    backgroundColor: "#FFFFFF",
     marginHorizontal: 25,
     marginBottom: 60,
     paddingHorizontal: 25,
@@ -204,7 +201,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   loginButton: {
-    backgroundColor: "#0a3d62", 
+    backgroundColor: "#0a3d62",
     borderRadius: 15,
     paddingVertical: 16,
     alignItems: "center",
@@ -218,7 +215,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff", // Texto blanco sobre fondo oscuro
+    color: "#fff",
     letterSpacing: 2,
   },
   forgotPassword: {

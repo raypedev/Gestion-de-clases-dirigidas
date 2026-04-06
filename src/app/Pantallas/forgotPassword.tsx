@@ -3,169 +3,172 @@ import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import {
+    Alert,
     StyleSheet,
     Text,
     TextInput,
     TouchableOpacity,
-    View,
+    View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { usuarios } from "@/src/db/schema";
 import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
-import { Alert } from "react-native";
+
 
 export const ForgotPassword = () => {
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db, { schema: { usuarios } });
+  const [correo, setCorreo] = useState("");
 
-    const db = useSQLiteContext();
-    const drizzleDb = drizzle(db, { schema: { usuarios } });
-    const [correo, setCorreo] = useState("");
+  function navigateBack() {
+    router.push({ pathname: "/" }); // Vuelve a la pantalla principal
+  }
 
-    function navigateBack() {
-        router.push({ pathname: "/" }); // Vuelve a la pantalla principal
+  async function mostrarContraseña() {
+    if (!correo) {
+      Alert.alert("Error", "Introduce tu correo");
+      return;
     }
 
-    async function mostrarContraseña() {
-  if (!correo) {
-    Alert.alert("Error", "Introduce tu correo");
-    return;
+    const resultado = await drizzleDb
+      .select()
+      .from(usuarios)
+      .where(eq(usuarios.correo, correo));
+
+    if (resultado.length > 0) {
+      const pass = resultado[0].password;
+      Alert.alert("Correo enviado a ", pass);
+    } else {
+      Alert.alert("Error", "No se encontró ningún usuario con ese correo");
+    }
   }
 
-  const resultado = await drizzleDb
-    .select()
-    .from(usuarios)
-    .where(eq(usuarios.correo, correo));
+  return (
+    <LinearGradient
+      colors={["#e0f7f9", "#ffffff", "#e0f7f9"]}
+      style={styles.mainContainer}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        {/* Logo / Título */}
+        <View style={styles.header}>
+          <Text style={styles.logoText}>FITCONTROL</Text>
+        </View>
 
-  if (resultado.length > 0) {
-    const pass = resultado[0].password;
-    Alert.alert("Tu contraseña es:", pass);
-  } else {
-    Alert.alert("Error", "No se encontró ningún usuario con ese correo");
-  }
-}
+        {/* Tarjeta de recuperación */}
+        <View style={styles.formCard}>
+          <Text style={styles.cardTitle}>Recupera tu cuenta</Text>
 
-    return (
-        <LinearGradient
-            colors={["#e0f7f9", "#ffffff", "#e0f7f9"]}
-            style={styles.mainContainer}
-        >
-            <SafeAreaView style={styles.safeArea}>
-                {/* Logo / Título */}
-                <View style={styles.header}>
-                    <Text style={styles.logoText}>FITCONTROL</Text>
-                </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Correo electrónico"
+            placeholderTextColor="#888"
+            value={correo}
+            onChangeText={setCorreo}
+          />
 
-                {/* Tarjeta de recuperación */}
-                <View style={styles.formCard}>
-                    <Text style={styles.cardTitle}>Recupera tu cuenta</Text>
+          <TouchableOpacity
+            style={styles.sendButton}
+            onPress={mostrarContraseña}
+          >
+            <Text style={styles.sendButtonText}>Enviar correo</Text>
+          </TouchableOpacity>
 
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Correo electrónico"
-                        placeholderTextColor="#888"
-                        value={correo}
-                        onChangeText={setCorreo}
-                    />
-
-                    <TouchableOpacity style={styles.sendButton} onPress={mostrarContraseña}>
-                        <Text style={styles.sendButtonText}>Enviar correo</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity onPress={navigateBack}>
-                        <Text style={styles.forgotPassword}>
-                            Volver al inicio de sesión
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-            </SafeAreaView>
-        </LinearGradient>
-    );
-}
+          <TouchableOpacity onPress={navigateBack}>
+            <Text style={styles.forgotPassword}>
+              Volver al inicio de sesión
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    </LinearGradient>
+  );
+};
 export default ForgotPassword;
 
 const styles = StyleSheet.create({
-    mainContainer: {
-        flex: 1,
-    },
-    safeArea: {
-        flex: 1,
-        justifyContent: "flex-start",
-    },
-    header: {
-        flex: 0.6, 
-        justifyContent: "center",
-        alignItems: "center",
-        marginTop: 20,
-    },
-    logoText: {
-        fontSize: 36,
-        fontWeight: "900",
-        fontStyle: "italic",
-        letterSpacing: -1,
-        color: "#0a3d62",
-        textAlign: "center",
-    },
-    formCard: {
-        backgroundColor: "#FFFFFF",
-        marginHorizontal: 25,
-        marginTop: 10, 
-        paddingHorizontal: 25,
-        paddingVertical: 35,
-        borderRadius: 30,
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 15 },
-        shadowOpacity: 0.2,
-        shadowRadius: 20,
-        elevation: 20,
-        borderWidth: 1,
-        borderColor: "#f0f0f0",
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: "700",
-        color: "#333",
-        marginBottom: 20,
-        textAlign: "center",
-        textTransform: "uppercase",
-        letterSpacing: 1,
-    },
-    input: {
-        backgroundColor: "#f8f9fa",
-        borderRadius: 15,
-        paddingVertical: 15,
-        paddingHorizontal: 20,
-        marginBottom: 15,
-        fontSize: 16,
-        borderWidth: 1,
-        borderColor: "#eee",
-        color: "#333",
-    },
-    sendButton: {
-        backgroundColor: "#0a3d62",
-        borderRadius: 15,
-        paddingVertical: 14,
-        paddingHorizontal: 30,
-        alignItems: "center",
-        marginTop: 10,
-        shadowColor: "#0a3d62",
-        shadowOffset: { width: 0, height: 5 },
-        shadowOpacity: 0.4,
-        shadowRadius: 10,
-        elevation: 8,
-        alignSelf: "center",
-    },
-    sendButtonText: {
-        fontSize: 16,
-        fontWeight: "bold",
-        color: "#fff",
-        letterSpacing: 1.5,
-        textAlign: "center",
-    },
-    forgotPassword: {
-        textAlign: "center",
-        marginTop: 20,
-        color: "#777",
-        fontSize: 14,
-    },
+  mainContainer: {
+    flex: 1,
+  },
+  safeArea: {
+    flex: 1,
+    justifyContent: "flex-start",
+  },
+  header: {
+    flex: 0.6,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  logoText: {
+    fontSize: 36,
+    fontWeight: "900",
+    fontStyle: "italic",
+    letterSpacing: -1,
+    color: "#0a3d62",
+    textAlign: "center",
+  },
+  formCard: {
+    backgroundColor: "#FFFFFF",
+    marginHorizontal: 25,
+    marginTop: 10,
+    paddingHorizontal: 25,
+    paddingVertical: 35,
+    borderRadius: 30,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 20,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#333",
+    marginBottom: 20,
+    textAlign: "center",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  input: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    marginBottom: 15,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#eee",
+    color: "#333",
+  },
+  sendButton: {
+    backgroundColor: "#0a3d62",
+    borderRadius: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 30,
+    alignItems: "center",
+    marginTop: 10,
+    shadowColor: "#0a3d62",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
+    alignSelf: "center",
+  },
+  sendButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    letterSpacing: 1.5,
+    textAlign: "center",
+  },
+  forgotPassword: {
+    textAlign: "center",
+    marginTop: 20,
+    color: "#777",
+    fontSize: 14,
+  },
 });

@@ -1,8 +1,8 @@
 import { useAppContext } from "@/src/context/AppContextProvider";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useFocusEffect } from "expo-router"; // <-- Añadido useFocusEffect
-import React, { useCallback, useState } from "react"; // <-- Añadido useCallback
+import { router, useFocusEffect } from "expo-router";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -187,12 +187,14 @@ export const ListaActividades = () => {
             >
               <Text style={styles.actionButtonText}>AÑADIR ACTIVIDAD</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
-              style={styles.actionButton}
+              style={[styles.actionButton, styles.buttonSeparator]}
               onPress={() => router.push("/Pantallas/userList")}
             >
-              <Text style={styles.actionButtonText}>USURIOS REGISTRADOS</Text>
+              <Text style={styles.actionButtonText}>USUARIOS REGISTRADOS</Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               onPress={() => router.back()}
               style={styles.cancelContainer}
@@ -285,6 +287,9 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     width: "100%",
     alignItems: "center",
+  },
+  buttonSeparator: {
+    marginTop: 12, // Esto crea la separación entre los dos botones
   },
   actionButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   cancelContainer: { marginTop: 15 },

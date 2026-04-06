@@ -5,79 +5,36 @@ import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import React, { useEffect, useState } from "react"; // Añadido useState
+import React, { useEffect, useState } from "react";
 import {
-    Alert,
-    Modal,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity, // Añadido Modal
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-const ACTIVIDADES_DATA = [
-  {
-    id: "1",
-    name: "YOGA",
-    day: "LUNES",
-    time: "6:00 AM",
-    icon: "meditation" as any,
-  },
-  {
-    id: "2",
-    name: "YOGA",
-    day: "MIÉRCOLES",
-    time: "6:00 AM",
-    icon: "meditation" as any,
-  },
-  {
-    id: "3",
-    name: "ZUMBA",
-    day: "MARTES",
-    time: "10:00 AM",
-    icon: "human-female-dance" as any,
-  },
-  {
-    id: "4",
-    name: "ZUMBA",
-    day: "JUEVES",
-    time: "7:00 PM",
-    icon: "human-female-dance" as any,
-  },
-  {
-    id: "5",
-    name: "SPINNING",
-    day: "VIERNES",
-    time: "6:30 AM",
-    icon: "bike" as any,
-  },
-  {
-    id: "6",
-    name: "SPINNING",
-    day: "SÁBADO",
-    time: "9:00 AM",
-    icon: "bike" as any,
-  },
-];
 
 export const ListaActividades = () => {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { inscripciones } });
-  const { usuario, setUsuario } = useAppContext(); // Extraemos setUsuario para el logout
-  const [menuVisible, setMenuVisible] = useState(false); // Estado para el dropdown
+  const { usuario, setUsuario } = useAppContext();
+  const [menuVisible, setMenuVisible] = useState(false);
 
-  // Cargar actividades
+  // Estados para la carga de datos
   const [listaActividades, setListaActividades] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
+
+  // Cargar actividades desde SQLite
   const cargarActividades = async () => {
     try {
       setCargando(true);
       const res = await drizzleDb.select().from(actividades);
       setListaActividades(res);
-      console.log("Actividades cargadas:", res.length);
     } catch (error) {
       console.error("Error al cargar:", error);
     } finally {
@@ -85,6 +42,7 @@ export const ListaActividades = () => {
     }
   };
 
+  // Función para volver atrás
   function volverAtras() {
     if (router.canGoBack()) {
       router.back();
@@ -99,43 +57,51 @@ export const ListaActividades = () => {
     router.replace("/");
   };
 
-  async function apuntarseActividad(idActividad: string) {
+  async function apuntarseActividad(actividad: any) {
     if (!usuario) {
       Alert.alert("Error", "No hay usuario logueado");
       return;
     }
 
-    const yaApuntado = await drizzleDb.select().from(inscripciones).all();
+    try {
+      const yaApuntado = await drizzleDb.select().from(inscripciones).all();
+      const existe = yaApuntado.find(
+        (i) =>
+          i.usuarioId === parseInt(usuario.id) &&
+          i.actividadId === actividad.id,
+      );
 
-    const existe = yaApuntado.find(
-      (i) =>
-        i.usuarioId === parseInt(usuario.id) &&
-        i.actividadId === parseInt(idActividad),
-    );
+      if (existe) {
+        Alert.alert("Aviso", "Ya estás apuntado a esta actividad");
+        return;
+      }
 
-    if (existe) {
-      Alert.alert("Aviso", "Ya estás apuntado a esta actividad");
-      return;
+      Alert.alert(
+        "Confirmación",
+        `¿Te quieres apuntar a ${actividad.nombre}?`,
+        [
+          { text: "No", style: "cancel" },
+          {
+            text: "Sí",
+            onPress: async () => {
+              await drizzleDb.insert(inscripciones).values({
+                usuarioId: parseInt(usuario.id),
+                actividadId: actividad.id,
+              });
+              Alert.alert("¡Éxito!", "Te has apuntado correctamente");
+            },
+          },
+        ],
+      );
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "No se pudo procesar la inscripción");
     }
-
-    Alert.alert("Confirmación", "¿Te quieres apuntar a esta actividad?", [
-      { text: "No", style: "cancel" },
-      {
-        text: "Sí",
-        onPress: async () => {
-          await drizzleDb.insert(inscripciones).values({
-            usuarioId: parseInt(usuario.id),
-            actividadId: parseInt(idActividad),
-          });
-          Alert.alert("OK", "Te has apuntado correctamente");
-        },
-      },
-    ]);
   }
 
   useEffect(() => {
     cargarActividades();
-  }, []); // Se ejecuta una sola vez al "montar" el componente
+  }, []);
 
   return (
     <LinearGradient
@@ -182,6 +148,7 @@ export const ListaActividades = () => {
                 >
                   <Text style={styles.menuItemText}>Mi perfil</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={styles.menuItem}
                   onPress={() => {
@@ -191,6 +158,7 @@ export const ListaActividades = () => {
                 >
                   <Text style={styles.menuItemText}>Mis actividades</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={styles.menuItem}
                   onPress={() => {
@@ -210,7 +178,7 @@ export const ListaActividades = () => {
                   <MaterialCommunityIcons
                     name="logout"
                     size={18}
-                    color="#333"
+                    color="#0a3d62"
                   />
                   <Text style={styles.logoutText}>Cerrar sesión</Text>
                 </TouchableOpacity>
@@ -225,39 +193,59 @@ export const ListaActividades = () => {
         </View>
 
         <View style={styles.formCard}>
-          <View style={{ flex: 1 }}>
+          {cargando ? (
+            <ActivityIndicator
+              size="large"
+              color="#0a3d62"
+              style={{ marginTop: 20 }}
+            />
+          ) : (
             <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={styles.scrollContent}
             >
-              {listaActividades.map((actividad) => (
-                <TouchableOpacity
-                  key={actividad.id}
-                  style={styles.activityRow}
-                  onPress={() => apuntarseActividad(actividad.id)}
-                >
-                  <View style={styles.iconContainer}>
+              {listaActividades.length === 0 ? (
+                <Text style={styles.emptyText}>
+                  No hay actividades disponibles.
+                </Text>
+              ) : (
+                listaActividades.map((actividad) => (
+                  <TouchableOpacity
+                    key={actividad.id}
+                    style={styles.activityRow}
+                    onPress={() => apuntarseActividad(actividad)}
+                  >
+                    <View style={styles.iconContainer}>
+                      <MaterialCommunityIcons
+                        name={actividad.icon || "run"}
+                        size={30}
+                        color="#0a3d62"
+                      />
+                    </View>
+                    <View style={styles.textContainer}>
+                      <Text style={styles.activityName}>
+                        {actividad.nombre}
+                      </Text>
+                      <Text style={styles.activityTime}>
+                        {actividad.dia}, {actividad.hora}
+                      </Text>
+                    </View>
                     <MaterialCommunityIcons
-                      name={actividad.icon}
-                      size={30}
+                      name="plus-circle-outline"
+                      size={24}
                       color="#0a3d62"
                     />
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.activityName}>{actividad.nombre}</Text>
-                    <Text style={styles.activityTime}>
-                      {actividad.dia}, {actividad.hora}
-                    </Text>
-                  </View>
-                  <View style={styles.textContainer}>
-                    <Text style={styles.activityName}>{actividad.name}</Text>
-                    <Text style={styles.activityTime}>
-                      {actividad.day}, {actividad.time}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
+                  </TouchableOpacity>
+                ))
+              )}
             </ScrollView>
+          )}
+
+          {/* BOTÓN VOLVER ATRÁS */}
+          <View style={styles.footer}>
+            <TouchableOpacity onPress={volverAtras} style={styles.backButton}>
+              <Text style={styles.backButtonText}>VOLVER ATRÁS</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </SafeAreaView>
@@ -278,7 +266,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: "transparent",
+    backgroundColor: "rgba(0,0,0,0.05)",
   },
   dropdownMenu: {
     position: "absolute",
@@ -286,7 +274,7 @@ const styles = StyleSheet.create({
     right: 20,
     backgroundColor: "white",
     borderRadius: 12,
-    width: 220,
+    width: 200,
     paddingVertical: 15,
     elevation: 15,
     shadowColor: "#000",
@@ -298,8 +286,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 5,
   },
-  userNameText: { fontSize: 18, fontWeight: "bold", color: "#000" },
-  userSubText: { fontSize: 13, color: "#888" },
+  userNameText: { fontSize: 18, fontWeight: "bold", color: "#0a3d62" },
   menuDivider: { height: 1, backgroundColor: "#eee", marginVertical: 10 },
   menuItem: { paddingVertical: 10, paddingHorizontal: 20 },
   menuItemText: { fontSize: 15, color: "#333" },
@@ -312,12 +299,13 @@ const styles = StyleSheet.create({
   logoutText: {
     marginLeft: 10,
     fontSize: 15,
-    color: "#333",
-    fontWeight: "500",
+    color: "#0a3d62",
+    fontWeight: "bold",
   },
   header: {
     alignItems: "center",
     paddingVertical: 10,
+    marginTop: 10,
   },
   headerTitle: { fontSize: 26, fontWeight: "900", color: "#0a3d62" },
   headerSubtitle: {
@@ -329,16 +317,15 @@ const styles = StyleSheet.create({
   },
   formCard: {
     flex: 1,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#fff",
     marginHorizontal: 20,
     marginBottom: 20,
     borderRadius: 40,
     padding: 20,
-    elevation: 4,
+    elevation: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 10,
   },
   scrollContent: {
     paddingBottom: 10,
@@ -354,7 +341,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 12,
-    backgroundColor: "#fff",
+    backgroundColor: "#e0f7f9",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 15,
@@ -362,4 +349,21 @@ const styles = StyleSheet.create({
   textContainer: { flex: 1 },
   activityName: { fontSize: 17, fontWeight: "bold", color: "#333" },
   activityTime: { fontSize: 13, color: "#777" },
+  emptyText: { textAlign: "center", color: "#999", marginTop: 30 },
+  footer: {
+    marginTop: 15,
+    alignItems: "center",
+  },
+  backButton: {
+    backgroundColor: "#0a3d62",
+    borderRadius: 20,
+    paddingVertical: 15,
+    width: "100%",
+    alignItems: "center",
+  },
+  backButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
 });

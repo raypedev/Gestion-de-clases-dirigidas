@@ -16,23 +16,12 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-
-
 export const index = () => {
-
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
   const { setUsuario } = useAppContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  function navegarGuardarPersona() {
-    router.push({ pathname: "/GuardarPersona" });
-  }
-
-  //function navegarVerUsuarios() {
-  // router.push({ pathname: "/Pantallas/verUsuarios" });
-  // }
 
   function navegarRegistroUsuario() {
     router.push({ pathname: "/Pantallas/registeruser" });
@@ -42,17 +31,13 @@ export const index = () => {
     router.push({ pathname: "/Pantallas/forgotPassword" });
   }
 
-  function navegarListaActividades() {
-    router.push({ pathname: "/Pantallas/AdminActivityList" });
-  }
-
   async function hacerLogin() {
     // 1. Obtener todos los usuarios de la DB
     const resultado = await drizzleDb.select().from(usuarios).all();
 
     // 2. Buscar si las credenciales coinciden
     const usuarioEncontrado = resultado.find(
-      (u) => u.correo === email && u.password === password
+      (u) => u.correo === email && u.password === password,
     );
 
     // 3. CASO ESPECIAL: Hardcoded Admin (admin/admin)
@@ -124,15 +109,11 @@ export const index = () => {
           />
 
           {/* Botón ENTRAR más potente */}
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={hacerLogin}
-          >
+          <TouchableOpacity style={styles.loginButton} onPress={hacerLogin}>
             <Text style={styles.loginButtonText}>ENTRAR</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={navegarForgotPassword}>
+          <TouchableOpacity onPress={navegarForgotPassword}>
             <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
           </TouchableOpacity>
 
@@ -162,7 +143,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flex: 1.5, // Reducido un poco para dar espacio al login
+    flex: 1.5,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -187,7 +168,7 @@ const styles = StyleSheet.create({
   },
   // --- ESTILOS DE RESALTE ---
   formCard: {
-    backgroundColor: "#FFFFFF", // Blanco total para que destaque sobre el fondo cian
+    backgroundColor: "#FFFFFF",
     marginHorizontal: 25,
     marginBottom: 60,
     paddingHorizontal: 25,
@@ -224,7 +205,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   loginButton: {
-    backgroundColor: "#0a3d62", // Azul marino oscuro para máximo contraste
+    backgroundColor: "#0a3d62",
     borderRadius: 15,
     paddingVertical: 16,
     alignItems: "center",
@@ -238,7 +219,7 @@ const styles = StyleSheet.create({
   loginButtonText: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#fff", // Texto blanco sobre fondo oscuro
+    color: "#fff",
     letterSpacing: 2,
   },
   forgotPassword: {

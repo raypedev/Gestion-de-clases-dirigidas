@@ -8,12 +8,12 @@ import { router, useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 import React, { useCallback, useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -84,20 +84,6 @@ export default function MyActivities() {
       setCargando(false);
     }
   };
-
-  /*
-  useEffect(() => {
-    const inicializarTodo = async () => {
-      // Primero obtenemos todas las actividades y las guardamos en una constante
-      const datosDeBD = await cargarActividades();
-      // Si hay datos y hay un usuario, cargamos sus inscripciones pasándole los datos de A
-      if (datosDeBD.length > 0 && usuario) {
-        await cargarMisActividades();
-      }
-    };
-    inicializarTodo();
-  }, []);
-*/
 
   useFocusEffect(
     useCallback(() => {
