@@ -76,7 +76,7 @@ export const index = () => {
             style={styles.maskedView}
             maskElement={
               <View style={styles.maskElementContainer}>
-                <Text style={styles.logoText}>FITCONTROL</Text>
+                <Text style={styles.logoText}>VITALITYFIT</Text>
               </View>
             }
           >

@@ -51,6 +51,15 @@ export const ListaActividades = () => {
     }, []),
   );
 
+  // FUNCIÓN PARA VER RESERVAS
+  const verReservas = (id: number) => {
+    // Redirige a la pantalla de detalles de la actividad para ver los usuarios
+    router.push({
+      pathname: "/Pantallas/ActivityDetails",
+      params: { id: id },
+    });
+  };
+
   // FUNCIÓN DE BORRADO
   const eliminarActividad = (id: number, nombre: string) => {
     console.log("Botón pulsado para ID:", id);
@@ -164,9 +173,22 @@ export const ListaActividades = () => {
                       </Text>
                     </View>
 
+                    {/* BOTÓN OJO (VER RESERVAS) */}
+                    <TouchableOpacity
+                      onPress={() => verReservas(act.id)}
+                      style={styles.actionIconButton}
+                    >
+                      <MaterialCommunityIcons
+                        name="eye-outline"
+                        size={26}
+                        color="#0a3d62"
+                      />
+                    </TouchableOpacity>
+
+                    {/* BOTÓN PAPELERA (ELIMINAR) */}
                     <TouchableOpacity
                       onPress={() => eliminarActividad(act.id, act.nombre)}
-                      style={styles.deleteButton}
+                      style={styles.actionIconButton}
                     >
                       <MaterialCommunityIcons
                         name="trash-can-outline"
@@ -279,7 +301,7 @@ const styles = StyleSheet.create({
   textContainer: { flex: 1 },
   activityName: { fontSize: 17, fontWeight: "bold" },
   activityTime: { fontSize: 13, color: "#777" },
-  deleteButton: { padding: 10 },
+  actionIconButton: { padding: 8 }, // Estilo común para los botones de acción
   footer: { marginTop: 10, alignItems: "center" },
   actionButton: {
     backgroundColor: "#002851",
@@ -289,7 +311,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buttonSeparator: {
-    marginTop: 12, // Esto crea la separación entre los dos botones
+    marginTop: 12,
   },
   actionButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   cancelContainer: { marginTop: 15 },
