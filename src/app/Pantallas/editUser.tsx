@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     ActivityIndicator,
     Alert,
@@ -19,6 +19,7 @@ import { usuarios } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
+import { useAppContext } from "@/src/context/AppContextProvider";
 
 export const EditUser = () => {
   // 1. Obtenemos el ID del usuario desde los parámetros de la ruta
@@ -92,6 +93,15 @@ export const EditUser = () => {
       </View>
     );
   }
+
+  const { registrarVisita } = useAppContext();
+
+   useFocusEffect(
+      useCallback(() => {
+        // Registramos la entrada a esta pantalla
+        registrarVisita(db, "Editar Usuario");
+      }, [])
+    );
 
   return (
     <LinearGradient

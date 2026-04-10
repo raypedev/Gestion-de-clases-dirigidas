@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import {
     Alert,
     StyleSheet,
@@ -14,13 +14,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { usuarios } from "@/src/db/schema";
 import { useSQLiteContext } from "expo-sqlite";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { useAppContext } from "@/src/context/AppContextProvider";
 
 
 export const ForgotPassword = () => {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
   const [correo, setCorreo] = useState("");
+  const { usuario } = useAppContext();
 
   function navigateBack() {
     router.push({ pathname: "/" }); // Vuelve a la pantalla principal
@@ -44,6 +46,15 @@ export const ForgotPassword = () => {
       Alert.alert("Error", "No se encontró ningún usuario con ese correo");
     }
   }
+
+  const { registrarVisita } = useAppContext();
+
+  useFocusEffect(
+    useCallback(() => {
+      // Registramos la entrada a esta pantalla
+      registrarVisita(db, "Olvidar Contraseña");
+    }, [usuario])
+  );
 
   return (
     <LinearGradient

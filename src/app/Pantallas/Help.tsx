@@ -1,7 +1,9 @@
+import { useAppContext } from "@/src/context/AppContextProvider";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
-import React from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import React, { useCallback } from "react";
 import {
     Alert,
     ScrollView,
@@ -35,6 +37,16 @@ export default function Help() {
             icon: "shield-check"
         }
     ];
+
+     const { registrarVisita } = useAppContext();
+    const db = useSQLiteContext();
+        const { usuario } = useAppContext();
+   useFocusEffect(
+      useCallback(() => {
+        // Registramos la entrada a esta pantalla
+        registrarVisita(db, "Help");
+      }, [usuario])
+    );
 
     return (
         <LinearGradient colors={["#e0f7f9", "#ffffff"]} style={styles.container}>

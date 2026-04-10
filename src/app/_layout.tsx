@@ -47,6 +47,16 @@ async function crearTablas(db: any) {
     );
   `);
 
+  // --- NUEVA TABLA ESTADISTICAS ---
+  await drizzleDb.run(sql`
+    CREATE TABLE IF NOT EXISTS estadisticas (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      nombre_pantalla TEXT NOT NULL,
+      usuario_id TEXT NOT NULL
+    );
+  `);
+
+
   console.log("Tablas aseguradas (usuarios, inscripciones y actividades)");
 }
 

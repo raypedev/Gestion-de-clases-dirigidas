@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+
 const ACTIVIDADES_REF = [
   {
     id: "1",
@@ -135,6 +136,15 @@ export default function MyActivities() {
   cargarMisActividades
 }, []);
 */
+
+ const { registrarVisita } = useAppContext();
+
+   useFocusEffect(
+      useCallback(() => {
+        // Registramos la entrada a esta pantalla
+        registrarVisita(db, "Mis Actividades");
+      }, [usuario])
+    );
 
   const cargarMisActividades = async () => {
     // 1. Usamos el usuario del Contexto

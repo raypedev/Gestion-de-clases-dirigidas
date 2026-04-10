@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   Alert,
   StyleSheet,
@@ -12,10 +12,11 @@ import { usuarios } from "@/src/db/schema";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAppContext } from "@/src/context/AppContextProvider";
 
 export const RegistroUsuario = () => {
   // 1. Crear los estados para almacenar los valores
@@ -57,6 +58,14 @@ export const RegistroUsuario = () => {
       },
     ]);
   }
+
+  const { registrarVisita } = useAppContext();
+     useFocusEffect(
+        useCallback(() => {
+          // Registramos la entrada a esta pantalla
+          registrarVisita(db, "Help");
+        }, [])
+      );
 
   return (
     <LinearGradient

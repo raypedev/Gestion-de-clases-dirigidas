@@ -4,9 +4,9 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     Alert,
     KeyboardAvoidingView,
@@ -80,6 +80,14 @@ export default function UserProfile() {
             Alert.alert("Error", "No se pudieron guardar los cambios");
         }
     };
+
+    const { registrarVisita } = useAppContext();
+       useFocusEffect(
+          useCallback(() => {
+            // Registramos la entrada a esta pantalla
+            registrarVisita(db, "Help");
+          }, [usuario])
+        );
 
     return (
         <LinearGradient colors={["#e0f7f9", "#ffffff"]} style={styles.container}>

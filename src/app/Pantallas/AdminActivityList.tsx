@@ -116,9 +116,14 @@ export const ListaActividades = () => {
                   <Text style={styles.userNameText}>
                     {usuario?.nick || "Admin"}
                   </Text>
-                  <Text style={styles.userSubText}>
-                    Panel de Administración
-                  </Text>
+                  <TouchableOpacity
+                    style={styles.actionButton}
+                    onPress={() => router.push("/Pantallas/Estadistics")}
+                  >
+                    <Text style={styles.userSubText}>
+                      Panel de Administrador
+                    </Text>
+                  </TouchableOpacity>
                 </View>
                 <View style={styles.menuDivider} />
                 <TouchableOpacity

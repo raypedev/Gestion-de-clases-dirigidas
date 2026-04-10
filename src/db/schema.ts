@@ -1,5 +1,5 @@
 //import { relations } from "drizzle-orm";
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, sqliteTable, text, unique } from "drizzle-orm/sqlite-core";
 
 // export const personas = sqliteTable("personas", {
 //     id: integer("id").primaryKey({ autoIncrement: true }),
@@ -29,34 +29,8 @@ export const actividades = sqliteTable("actividades", {
     icon: text("icon"),
 });
 
-/*
-export const categorias = sqliteTable('categorias', {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    nombre: text('nombre').unique().notNull(),
-
-
+export const estadisticas = sqliteTable("estadisticas", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  nombre_pantalla: text("nombre_pantalla").notNull(),
+  usuario_id: integer("usuario_id").notNull(), // <-- Necesitamos saber quién es
 });
-
-
-export const productos = sqliteTable('productos', {
-    id: integer('id').primaryKey({ autoIncrement: true }),
-    nombre: text('nombre').unique().notNull(),
-    stock: integer('stock'),
-    precio: real('precio'),
-    categoriaId: integer('categoria_id').references(() => categorias.id),
-});
-
-
-
-export const categoriasRelations = relations(categorias, ({ many }) => ({
-    productos: many(productos),
-}));
-
-export const productosRelations = relations(productos, ({ one }) => ({
-    pais: one(categorias, {
-        fields: [productos.categoriaId],
-        references: [categorias.id],
-    }),
-}));
-
-*/

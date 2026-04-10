@@ -7,6 +7,7 @@ import m0002 from './0002_sleepy_ink.sql';
 import m0003 from './0003_green_silverclaw.sql';
 import m0004 from './0004_breezy_unus.sql';
 import m0005 from './0005_stealthy_lynx.sql';
+import m0006 from './0006_estadistics.sql';
 
   export default {
     journal,
@@ -17,6 +18,7 @@ m0002,
 m0003,
 m0004,
 m0005,
+m0006,
     }
   }
   

@@ -3,9 +3,9 @@ import { actividades, inscripciones } from "@/src/db/schema";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -103,6 +103,15 @@ export const ListaActividades = () => {
     cargarActividades();
   }, []);
 
+  const { registrarVisita } = useAppContext();
+  
+     useFocusEffect(
+        useCallback(() => {
+          // Registramos la entrada a esta pantalla
+          registrarVisita(db, "Lista de Actividades");
+        }, [usuario])
+      );
+  
   return (
     <LinearGradient
       colors={["#e0f7f9", "#ffffff", "#e0f7f9"]}
