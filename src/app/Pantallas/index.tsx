@@ -43,7 +43,7 @@ export const index = () => {
     // 3. CASO ESPECIAL: Hardcoded Admin (admin/admin)
     // Si escriben 'admin' en ambos campos, van directo a la lista de admin
     if (email === "admin" && password === "admin") {
-      setUsuario({ id: "0", nick: "Administrador" }); // Seteamos un usuario genérico de admin
+      setUsuario({ id: 0, nick: "Administrador" }); // Seteamos un usuario genérico de admin
       router.push("/Pantallas/AdminActivityList");
       return;
     }
@@ -56,7 +56,7 @@ export const index = () => {
 
     // Guardamos los datos en el contexto
     setUsuario({
-      id: usuarioEncontrado.id.toString(),
+      id: usuarioEncontrado.id,
       nick: usuarioEncontrado.nombre,
     });
 

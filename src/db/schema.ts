@@ -13,6 +13,7 @@ export const usuarios = sqliteTable("usuarios", {
     dni: text("dni"),
     correo: text("correo").notNull(),
     password: text("password").notNull(),
+    genero: text("genero").notNull(),
 });
 
 export const inscripciones = sqliteTable("inscripciones", {

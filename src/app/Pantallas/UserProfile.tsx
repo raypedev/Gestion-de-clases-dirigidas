@@ -31,7 +31,14 @@ export default function UserProfile() {
     const [password, setPassword] = useState("");
     const [email, setEmail] = useState(""); 
     const [editando, setEditando] = useState(false);
+    const [genero, setGenero] = useState(""); 
 
+    const opcionesGenero = [
+    {label: "Mujer", value: "Mujer"},
+    {label: "Hombre", value: "Hombre"},
+    {label: "No binario", value: "No binario"},
+    {label: "Prefiero no decir", value: "Prefiero no decir"},
+  ];
     // Cargar datos de la base de datos al montar el componente
     useEffect(() => {
         async function cargarDatosUsuario() {
@@ -40,13 +47,14 @@ export default function UserProfile() {
                 const res = await drizzleDb
                     .select()
                     .from(usuarios)
-                    .where(eq(usuarios.id, parseInt(usuario.id)));
+                    .where(eq(usuarios.id, Number(usuario.id)));
                 
                 if (res.length > 0) {
                     setNombre(res[0].nombre);
                     setDni(res[0].dni || "");
                     setPassword(res[0].password);
                     setEmail(res[0].correo); 
+                    setGenero(res[0].genero || "");
                 }
             } catch (error) {
                 console.error("Error al cargar usuario:", error);
@@ -67,9 +75,10 @@ export default function UserProfile() {
                 .set({ 
                     nombre: nombre, 
                     dni: dni, 
-                    password: password 
+                    password: password,
+                    genero: genero
                 })
-                .where(eq(usuarios.id, parseInt(usuario!.id)));
+                .where(eq(usuarios.id, Number(usuario!.id)));
 
             // Actualizar contexto global para que el menú refleje el nuevo nombre
             setUsuario({ ...usuario!, nick: nombre });
@@ -85,7 +94,7 @@ export default function UserProfile() {
        useFocusEffect(
           useCallback(() => {
             // Registramos la entrada a esta pantalla
-            registrarVisita(db, "Help");
+            registrarVisita(db, "Mi Perfil");
           }, [usuario])
         );
 
@@ -158,6 +167,34 @@ export default function UserProfile() {
                                 />
                             </View>
 
+                            <Text style={styles.label}>Género</Text>
+                                      <View style={styles.genderContainer}>
+                                        {opcionesGenero.map((opcion) => {
+                                          const seleccionado = genero === opcion.label;
+                                          return (
+                                            <TouchableOpacity
+                                              key={opcion.label}
+                                              style={styles.genderOption}
+                                              onPress={() => setGenero(opcion.label)}
+                                            >
+                                              <View style={[
+                                                styles.circle, 
+                                                seleccionado && styles.circleSelected
+                                              ]}>
+                                                {/* Si está seleccionado, mostramos un puntito blanco en el centro */}
+                                                {seleccionado && <View style={styles.innerCircle} />}
+                                              </View>
+                                              <Text style={[
+                                                styles.genderLabel, 
+                                                seleccionado && styles.genderLabelSelected
+                                              ]}>
+                                                {opcion.label}
+                                              </Text>
+                                            </TouchableOpacity>
+                                          );
+                                        })}
+                                      </View>
+
                             {/* Lógica de Botones */}
                             {!editando ? (
                                 <TouchableOpacity style={styles.mainBtn} onPress={() => setEditando(true)}>
@@ -202,5 +239,48 @@ const styles = StyleSheet.create({
     actionBtn: { flex: 1, padding: 18, borderRadius: 20, alignItems: 'center' },
     saveBtn: { backgroundColor: '#2ecc71' },
     cancelBtn: { backgroundColor: '#e74c3c' },
-    btnText: { color: 'white', fontWeight: 'bold', fontSize: 15, marginLeft: 8 }
+    btnText: { color: 'white', fontWeight: 'bold', fontSize: 15, marginLeft: 8 },
+     genderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 25,
+    marginTop: 10,
+    paddingHorizontal: 5,
+  },
+  genderOption: {
+    alignItems: "center",
+    flex: 1,
+  },
+  circle: {
+    width: 30, // Un poco más pequeño al no llevar icono
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#eee",
+    marginBottom: 8,
+  },
+  circleSelected: {
+    borderColor: "#0a3d62", // Borde del color principal
+    backgroundColor: "#fff",
+  },
+  innerCircle: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: "#0a3d62", // El punto central
+  },
+  genderLabel: {
+    fontSize: 12,
+    color: "#888",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  genderLabelSelected: {
+    color: "#0a3d62",
+    fontWeight: "bold",
+  },
+    
 });

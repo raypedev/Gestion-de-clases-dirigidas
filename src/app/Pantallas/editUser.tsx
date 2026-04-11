@@ -29,6 +29,14 @@ export const EditUser = () => {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [cargando, setCargando] = useState(true);
+  const [genero, setGenero] = useState("");
+
+  const opcionesGenero = [
+    {label: "Mujer", value: "Mujer"},
+    {label: "Hombre", value: "Hombre"},
+    {label: "No binario", value: "No binario"},
+    {label: "Prefiero no decir", value: "Prefiero no decir"},
+  ];
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
@@ -46,6 +54,7 @@ export const EditUser = () => {
           setNombre(res[0].nombre);
           setCorreo(res[0].correo);
           setPassword(res[0].password);
+          setGenero(res[0].genero);
         }
       } catch (error) {
         console.error("Error al cargar usuario:", error);
@@ -72,6 +81,7 @@ export const EditUser = () => {
           nombre: nombre.trim(),
           correo: correo.trim().toLowerCase(),
           password: password.trim(),
+          genero: genero,
         })
         .where(eq(usuarios.id, Number(id)));
 
@@ -163,6 +173,34 @@ export const EditUser = () => {
               placeholder="Nueva contraseña"
             />
 
+            <Text style={styles.label}>Género</Text>
+          <View style={styles.genderContainer}>
+            {opcionesGenero.map((opcion) => {
+              const seleccionado = genero === opcion.label;
+              return (
+                <TouchableOpacity
+                  key={opcion.label}
+                  style={styles.genderOption}
+                  onPress={() => setGenero(opcion.label)}
+                >
+                  <View style={[
+                    styles.circle, 
+                    seleccionado && styles.circleSelected
+                  ]}>
+                    {/* Si está seleccionado, mostramos un puntito blanco en el centro */}
+                    {seleccionado && <View style={styles.innerCircle} />}
+                  </View>
+                  <Text style={[
+                    styles.genderLabel, 
+                    seleccionado && styles.genderLabelSelected
+                  ]}>
+                    {opcion.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
             <TouchableOpacity
               style={styles.saveButton}
               onPress={actualizarUsuario}
@@ -252,4 +290,47 @@ const styles = StyleSheet.create({
   saveButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   cancelContainer: { marginTop: 20, alignItems: "center" },
   cancelText: { color: "#888", textDecorationLine: "underline" },
+
+  genderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 25,
+    marginTop: 10,
+    paddingHorizontal: 5,
+  },
+  genderOption: {
+    alignItems: "center",
+    flex: 1,
+  },
+  circle: {
+    width: 30, // Un poco más pequeño al no llevar icono
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#eee",
+    marginBottom: 8,
+  },
+  circleSelected: {
+    borderColor: "#0a3d62", // Borde del color principal
+    backgroundColor: "#fff",
+  },
+  innerCircle: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: "#0a3d62", // El punto central
+  },
+  genderLabel: {
+    fontSize: 12,
+    color: "#888",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  genderLabelSelected: {
+    color: "#0a3d62",
+    fontWeight: "bold",
+  },
 });

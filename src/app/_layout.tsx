@@ -23,7 +23,8 @@ async function crearTablas(db: any) {
       nombre TEXT NOT NULL,
       dni TEXT,
       correo TEXT NOT NULL,
-      password TEXT NOT NULL
+      password TEXT NOT NULL,
+      genero TEXT NOT NULL
     );
   `);
 

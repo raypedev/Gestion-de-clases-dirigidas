@@ -154,7 +154,7 @@ export default function MyActivities() {
       const res = await drizzleDb
         .select()
         .from(inscripciones)
-        .where(eq(inscripciones.usuarioId, parseInt(usuario.id)));
+        .where(eq(inscripciones.usuarioId, Number(usuario.id)));
       // 3. Cruzamos los datos usando 'listaCompleta'
       const datosCompletos = res
         .map((inscripcion) => {
@@ -194,7 +194,7 @@ export default function MyActivities() {
         .delete(inscripciones)
         .where(
           and(
-            eq(inscripciones.usuarioId, parseInt(usuario!.id)),
+            eq(inscripciones.usuarioId, Number(usuario!.id)),
             eq(inscripciones.actividadId, parseInt(actividadId)),
           ),
         );
@@ -330,4 +330,48 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#fee2e2",
   },
+
+   genderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 25,
+    marginTop: 10,
+    paddingHorizontal: 5,
+  },
+  genderOption: {
+    alignItems: "center",
+    flex: 1,
+  },
+  circle: {
+    width: 30, // Un poco más pequeño al no llevar icono
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#eee",
+    marginBottom: 8,
+  },
+  circleSelected: {
+    borderColor: "#0a3d62", // Borde del color principal
+    backgroundColor: "#fff",
+  },
+  innerCircle: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: "#0a3d62", // El punto central
+  },
+  genderLabel: {
+    fontSize: 12,
+    color: "#888",
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  genderLabelSelected: {
+    color: "#0a3d62",
+    fontWeight: "bold",
+  },
+
 });

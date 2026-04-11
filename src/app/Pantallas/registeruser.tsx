@@ -24,6 +24,9 @@ export const RegistroUsuario = () => {
   const [textoDNI, setTextoDNI] = useState("");
   const [textoMail, setTextoMail] = useState("");
   const [textoContraseña, setTextoContraseña] = useState("");
+  const [genero, setGenero] = useState("");
+
+  const opcionesGenero = ["Mujer", "Hombre", "No binario", "Otros", "Prefiero no decir"];
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
@@ -37,7 +40,7 @@ export const RegistroUsuario = () => {
 
   async function registrarPersona() {
     // Validar que todos los campos estén llenos
-    if (!textoNombre || !textoDNI || !textoMail || !textoContraseña) {
+    if (!textoNombre || !textoDNI || !textoMail || !textoContraseña || !genero) {
       Alert.alert("Error", "Por favor, rellena todos los campos");
       return;
     }
@@ -48,6 +51,7 @@ export const RegistroUsuario = () => {
       dni: textoDNI,
       correo: textoMail,
       password: textoContraseña,
+      genero: genero
     });
 
     // Mostrar mensaje y volver al login
@@ -63,7 +67,7 @@ export const RegistroUsuario = () => {
      useFocusEffect(
         useCallback(() => {
           // Registramos la entrada a esta pantalla
-          registrarVisita(db, "Help");
+          registrarVisita(db, "Registrar Usuario");
         }, [])
       );
 
@@ -123,6 +127,29 @@ export const RegistroUsuario = () => {
             onChangeText={setTextoContraseña}
             placeholderTextColor="#888"
           />
+
+          {/* 4. SECCIÓN DE GÉNERO */}
+            <Text style={styles.label}>Género: </Text>
+            <View style={styles.genderContainer}>
+              {opcionesGenero.map((opcion) => {
+                const seleccionado = genero === opcion;
+                return (
+                  <TouchableOpacity
+                    key={opcion}
+                    style={styles.genderOption}
+                    onPress={() => setGenero(opcion)}
+                    activeOpacity={0.7}
+                  >
+                    <View style={[styles.circle, seleccionado && styles.circleSelected]}>
+                      {seleccionado && <View style={styles.innerCircle} />}
+                    </View>
+                    <Text style={[styles.genderLabel, seleccionado && styles.genderLabelSelected]}>
+                      {opcion}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
           <TouchableOpacity
             style={styles.loginButton}
             onPress={registrarPersona}
@@ -245,5 +272,53 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: "#0a3d62",
     textDecorationLine: "underline",
+  },
+
+  // --- ESTILOS DE GÉNERO ---
+  label: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#555",
+    marginBottom: 8,
+    marginTop: 5,
+  },
+  genderContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 20,
+    marginTop: 5,
+  },
+  genderOption: {
+    alignItems: "center",
+    flex: 1,
+  },
+  circle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#ccc",
+    marginBottom: 6,
+  },
+  circleSelected: {
+    borderColor: "#0a3d62",
+  },
+  innerCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "#0a3d62",
+  },
+  genderLabel: {
+    fontSize: 11,
+    color: "#888",
+    textAlign: "center",
+  },
+  genderLabelSelected: {
+    color: "#0a3d62",
+    fontWeight: "bold",
   },
 });

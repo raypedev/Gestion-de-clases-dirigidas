@@ -67,7 +67,7 @@ export const ListaActividades = () => {
       const yaApuntado = await drizzleDb.select().from(inscripciones).all();
       const existe = yaApuntado.find(
         (i) =>
-          i.usuarioId === parseInt(usuario.id) &&
+          i.usuarioId === Number(usuario.id) &&
           i.actividadId === actividad.id,
       );
 
@@ -85,7 +85,7 @@ export const ListaActividades = () => {
             text: "Sí",
             onPress: async () => {
               await drizzleDb.insert(inscripciones).values({
-                usuarioId: parseInt(usuario.id),
+                usuarioId: Number(usuario.id),
                 actividadId: actividad.id,
               });
               Alert.alert("¡Éxito!", "Te has apuntado correctamente");
