@@ -5,7 +5,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 import { usuarios } from "@/src/db/schema";
@@ -15,8 +15,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import { useSQLiteContext } from "expo-sqlite";
 
-import { SafeAreaView } from "react-native-safe-area-context";
 import { useAppContext } from "@/src/context/AppContextProvider";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export const RegistroUsuario = () => {
   // 1. Crear los estados para almacenar los valores
@@ -26,7 +26,13 @@ export const RegistroUsuario = () => {
   const [textoContraseña, setTextoContraseña] = useState("");
   const [genero, setGenero] = useState("");
 
-  const opcionesGenero = ["Mujer", "Hombre", "No binario", "Otros", "Prefiero no decir"];
+  const opcionesGenero = [
+    "Mujer",
+    "Hombre",
+    "No binario",
+    "Otros",
+    "Prefiero no decir",
+  ];
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
@@ -40,7 +46,13 @@ export const RegistroUsuario = () => {
 
   async function registrarPersona() {
     // Validar que todos los campos estén llenos
-    if (!textoNombre || !textoDNI || !textoMail || !textoContraseña || !genero) {
+    if (
+      !textoNombre ||
+      !textoDNI ||
+      !textoMail ||
+      !textoContraseña ||
+      !genero
+    ) {
       Alert.alert("Error", "Por favor, rellena todos los campos");
       return;
     }
@@ -51,7 +63,7 @@ export const RegistroUsuario = () => {
       dni: textoDNI,
       correo: textoMail,
       password: textoContraseña,
-      genero: genero
+      genero: genero,
     });
 
     // Mostrar mensaje y volver al login
@@ -64,12 +76,12 @@ export const RegistroUsuario = () => {
   }
 
   const { registrarVisita } = useAppContext();
-     useFocusEffect(
-        useCallback(() => {
-          // Registramos la entrada a esta pantalla
-          registrarVisita(db, "Registrar Usuario");
-        }, [])
-      );
+  useFocusEffect(
+    useCallback(() => {
+      // Registramos la entrada a esta pantalla
+      registrarVisita(db, "Registrar Usuario");
+    }, []),
+  );
 
   return (
     <LinearGradient
@@ -83,7 +95,7 @@ export const RegistroUsuario = () => {
             style={styles.maskedView}
             maskElement={
               <View style={styles.maskElementContainer}>
-                <Text style={styles.logoText}>FITCONTROL</Text>
+                <Text style={styles.logoText}>VITALITYFIT</Text>
               </View>
             }
           >
@@ -129,27 +141,37 @@ export const RegistroUsuario = () => {
           />
 
           {/* 4. SECCIÓN DE GÉNERO */}
-            <Text style={styles.label}>Género: </Text>
-            <View style={styles.genderContainer}>
-              {opcionesGenero.map((opcion) => {
-                const seleccionado = genero === opcion;
-                return (
-                  <TouchableOpacity
-                    key={opcion}
-                    style={styles.genderOption}
-                    onPress={() => setGenero(opcion)}
-                    activeOpacity={0.7}
+          <Text style={styles.label}>Género: </Text>
+          <View style={styles.genderContainer}>
+            {opcionesGenero.map((opcion) => {
+              const seleccionado = genero === opcion;
+              return (
+                <TouchableOpacity
+                  key={opcion}
+                  style={styles.genderOption}
+                  onPress={() => setGenero(opcion)}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      styles.circle,
+                      seleccionado && styles.circleSelected,
+                    ]}
                   >
-                    <View style={[styles.circle, seleccionado && styles.circleSelected]}>
-                      {seleccionado && <View style={styles.innerCircle} />}
-                    </View>
-                    <Text style={[styles.genderLabel, seleccionado && styles.genderLabelSelected]}>
-                      {opcion}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
+                    {seleccionado && <View style={styles.innerCircle} />}
+                  </View>
+                  <Text
+                    style={[
+                      styles.genderLabel,
+                      seleccionado && styles.genderLabelSelected,
+                    ]}
+                  >
+                    {opcion}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
           <TouchableOpacity
             style={styles.loginButton}
             onPress={registrarPersona}

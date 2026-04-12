@@ -3,20 +3,19 @@ import { drizzle } from "drizzle-orm/expo-sqlite";
 import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect } from "expo-router";
 import {
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useAppContext } from "@/src/context/AppContextProvider";
 import { usuarios } from "@/src/db/schema";
 import { useSQLiteContext } from "expo-sqlite";
 import { useCallback, useState } from "react";
-import { useAppContext } from "@/src/context/AppContextProvider";
-
 
 export const ForgotPassword = () => {
   const db = useSQLiteContext();
@@ -53,7 +52,7 @@ export const ForgotPassword = () => {
     useCallback(() => {
       // Registramos la entrada a esta pantalla
       registrarVisita(db, "Olvidar Contraseña");
-    }, [usuario])
+    }, [usuario]),
   );
 
   return (
@@ -64,7 +63,7 @@ export const ForgotPassword = () => {
       <SafeAreaView style={styles.safeArea}>
         {/* Logo / Título */}
         <View style={styles.header}>
-          <Text style={styles.logoText}>FITCONTROL</Text>
+          <Text style={styles.logoText}>VITALITYFIT</Text>
         </View>
 
         {/* Tarjeta de recuperación */}
