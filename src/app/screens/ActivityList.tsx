@@ -67,8 +67,7 @@ export const ListaActividades = () => {
       const yaApuntado = await drizzleDb.select().from(inscripciones).all();
       const existe = yaApuntado.find(
         (i) =>
-          i.usuarioId === Number(usuario.id) &&
-          i.actividadId === actividad.id,
+          i.usuarioId === Number(usuario.id) && i.actividadId === actividad.id,
       );
 
       if (existe) {
@@ -104,14 +103,14 @@ export const ListaActividades = () => {
   }, []);
 
   const { registrarVisita } = useAppContext();
-  
-     useFocusEffect(
-        useCallback(() => {
-          // Registramos la entrada a esta pantalla
-          registrarVisita(db, "Lista de Actividades");
-        }, [usuario])
-      );
-  
+
+  useFocusEffect(
+    useCallback(() => {
+      // Registramos la entrada a esta pantalla
+      registrarVisita(db, "Lista de Actividades");
+    }, [usuario]),
+  );
+
   return (
     <LinearGradient
       colors={["#e0f7f9", "#ffffff", "#e0f7f9"]}
@@ -152,7 +151,7 @@ export const ListaActividades = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/Pantallas/UserProfile");
+                    router.push("/screens/UserProfile");
                   }}
                 >
                   <Text style={styles.menuItemText}>Mi perfil</Text>
@@ -162,7 +161,7 @@ export const ListaActividades = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/Pantallas/MyActivities");
+                    router.push("/screens/MyActivities");
                   }}
                 >
                   <Text style={styles.menuItemText}>Mis actividades</Text>
@@ -172,7 +171,7 @@ export const ListaActividades = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/Pantallas/Help");
+                    router.push("/screens/Help");
                   }}
                 >
                   <Text style={styles.menuItemText}>Ayuda</Text>

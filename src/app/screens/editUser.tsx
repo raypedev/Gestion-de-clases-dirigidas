@@ -3,28 +3,32 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // --- BASE DE DATOS ---
+import { useAppContext } from "@/src/context/AppContextProvider";
 import { usuarios } from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
-import { useAppContext } from "@/src/context/AppContextProvider";
 
 export const EditUser = () => {
-  // 1. Obtenemos el ID del usuario desde los parámetros de la ruta
+  // 1. Hooks de Configuración y Contexto (Siempre al principio)
   const { id } = useLocalSearchParams();
+  const db = useSQLiteContext();
+  const drizzleDb = drizzle(db);
+  const { registrarVisita } = useAppContext();
 
+  // 2. Estados
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
@@ -32,16 +36,13 @@ export const EditUser = () => {
   const [genero, setGenero] = useState("");
 
   const opcionesGenero = [
-    {label: "Mujer", value: "Mujer"},
-    {label: "Hombre", value: "Hombre"},
-    {label: "No binario", value: "No binario"},
-    {label: "Prefiero no decir", value: "Prefiero no decir"},
+    { label: "Mujer", value: "Mujer" },
+    { label: "Hombre", value: "Hombre" },
+    { label: "No binario", value: "No binario" },
+    { label: "Prefiero no decir", value: "Prefiero no decir" },
   ];
 
-  const db = useSQLiteContext();
-  const drizzleDb = drizzle(db);
-
-  // 2. Cargar los datos del usuario al abrir la pantalla
+  // 3. useEffect para cargar datos iniciales
   useEffect(() => {
     const cargarDatosUsuario = async () => {
       try {
@@ -67,7 +68,14 @@ export const EditUser = () => {
     cargarDatosUsuario();
   }, [id]);
 
-  // 3. Función para actualizar
+  // 4. useFocusEffect (Debe estar antes de cualquier 'return' temprano)
+  useFocusEffect(
+    useCallback(() => {
+      registrarVisita(db, "Editar Usuario");
+    }, []),
+  );
+
+  // 5. Función para actualizar
   const actualizarUsuario = async () => {
     if (!nombre.trim() || !correo.trim() || !password.trim()) {
       Alert.alert("Error", "Todos los campos son obligatorios");
@@ -96,6 +104,7 @@ export const EditUser = () => {
     }
   };
 
+  // 6. Retorno condicional de carga (Ahora es seguro usarlo aquí)
   if (cargando) {
     return (
       <View style={styles.center}>
@@ -103,15 +112,6 @@ export const EditUser = () => {
       </View>
     );
   }
-
-  const { registrarVisita } = useAppContext();
-
-   useFocusEffect(
-      useCallback(() => {
-        // Registramos la entrada a esta pantalla
-        registrarVisita(db, "Editar Usuario");
-      }, [])
-    );
 
   return (
     <LinearGradient
@@ -174,32 +174,35 @@ export const EditUser = () => {
             />
 
             <Text style={styles.label}>Género</Text>
-          <View style={styles.genderContainer}>
-            {opcionesGenero.map((opcion) => {
-              const seleccionado = genero === opcion.label;
-              return (
-                <TouchableOpacity
-                  key={opcion.label}
-                  style={styles.genderOption}
-                  onPress={() => setGenero(opcion.label)}
-                >
-                  <View style={[
-                    styles.circle, 
-                    seleccionado && styles.circleSelected
-                  ]}>
-                    {/* Si está seleccionado, mostramos un puntito blanco en el centro */}
-                    {seleccionado && <View style={styles.innerCircle} />}
-                  </View>
-                  <Text style={[
-                    styles.genderLabel, 
-                    seleccionado && styles.genderLabelSelected
-                  ]}>
-                    {opcion.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+            <View style={styles.genderContainer}>
+              {opcionesGenero.map((opcion) => {
+                const seleccionado = genero === opcion.label;
+                return (
+                  <TouchableOpacity
+                    key={opcion.label}
+                    style={styles.genderOption}
+                    onPress={() => setGenero(opcion.label)}
+                  >
+                    <View
+                      style={[
+                        styles.circle,
+                        seleccionado && styles.circleSelected,
+                      ]}
+                    >
+                      {seleccionado && <View style={styles.innerCircle} />}
+                    </View>
+                    <Text
+                      style={[
+                        styles.genderLabel,
+                        seleccionado && styles.genderLabelSelected,
+                      ]}
+                    >
+                      {opcion.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
             <TouchableOpacity
               style={styles.saveButton}
@@ -290,7 +293,6 @@ const styles = StyleSheet.create({
   saveButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
   cancelContainer: { marginTop: 20, alignItems: "center" },
   cancelText: { color: "#888", textDecorationLine: "underline" },
-
   genderContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -303,7 +305,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   circle: {
-    width: 30, // Un poco más pequeño al no llevar icono
+    width: 30,
     height: 30,
     borderRadius: 15,
     backgroundColor: "#fff",
@@ -314,14 +316,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   circleSelected: {
-    borderColor: "#0a3d62", // Borde del color principal
+    borderColor: "#0a3d62",
     backgroundColor: "#fff",
   },
   innerCircle: {
     width: 14,
     height: 14,
     borderRadius: 7,
-    backgroundColor: "#0a3d62", // El punto central
+    backgroundColor: "#0a3d62",
   },
   genderLabel: {
     fontSize: 12,

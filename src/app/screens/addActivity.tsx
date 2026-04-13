@@ -1,17 +1,17 @@
-import { useAppContext } from "@/src/context/AppContextProvider"; // <-- Añadido
+import { useAppContext } from "@/src/context/AppContextProvider";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
-  Modal, // <-- Añadido
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback, // <-- Añadido
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -31,8 +31,8 @@ const ICONOS_DISPONIBLES = [
 ];
 
 export const AnadirActividad = () => {
-  const { usuario, setUsuario } = useAppContext(); // <-- Añadido
-  const [menuVisible, setMenuVisible] = useState(false); // <-- Añadido
+  const { usuario, setUsuario } = useAppContext();
+  const [menuVisible, setMenuVisible] = useState(false);
   const [nombre, setNombre] = useState("");
   const [dia, setDia] = useState("");
   const [hora, setHora] = useState("");
@@ -81,7 +81,7 @@ export const AnadirActividad = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* ICONO DE PERFIL (Esquina superior derecha) */}
+        {/* ICONO DE PERFIL */}
         <TouchableOpacity
           style={styles.profileIconContainer}
           onPress={() => setMenuVisible(true)}
@@ -93,27 +93,38 @@ export const AnadirActividad = () => {
           />
         </TouchableOpacity>
 
-        {/* MODAL DE ADMINISTRADOR (Igual al de la imagen) */}
+        {/* MODAL DE MENÚ ACTUALIZADO */}
         <Modal visible={menuVisible} transparent animationType="fade">
           <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
             <View style={styles.modalOverlay}>
               <View style={styles.dropdownMenu}>
                 <View style={styles.userInfoSection}>
                   <Text style={styles.userNameText}>
-                    {usuario?.nick || "Administrador"}
-                  </Text>
-                  <Text style={styles.userSubText}>
-                    Panel de Administración
+                    {usuario?.nick || "rayco"}
                   </Text>
                 </View>
+
                 <View style={styles.menuDivider} />
+
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => {
+                    setMenuVisible(false);
+                    router.push("/screens/Estadistics");
+                  }}
+                >
+                  <Text style={styles.menuItemText}>Estadísticas</Text>
+                </TouchableOpacity>
+
+                <View style={styles.menuDivider} />
+
                 <TouchableOpacity
                   style={styles.logoutItem}
                   onPress={cerrarSesion}
                 >
                   <MaterialCommunityIcons
                     name="logout"
-                    size={18}
+                    size={20}
                     color="#0a3d62"
                   />
                   <Text style={styles.logoutText}>Cerrar sesión</Text>
@@ -225,14 +236,12 @@ export default AnadirActividad;
 const styles = StyleSheet.create({
   mainContainer: { flex: 1 },
   safeArea: { flex: 1 },
-  // ESTILOS DEL ICONO DE PERFIL
   profileIconContainer: {
     position: "absolute",
     top: 50,
     right: 20,
     zIndex: 20,
   },
-  // ESTILOS DEL MODAL (COMO EN TU IMAGEN)
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.1)",
@@ -242,28 +251,39 @@ const styles = StyleSheet.create({
     top: 100,
     right: 20,
     backgroundColor: "white",
-    borderRadius: 12,
-    width: 220,
-    paddingVertical: 15,
-    elevation: 15,
+    borderRadius: 20,
+    width: 240,
+    paddingVertical: 10,
+    elevation: 10,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
     shadowRadius: 10,
   },
-  userInfoSection: { paddingHorizontal: 20, paddingBottom: 5 },
-  userNameText: { fontSize: 18, fontWeight: "bold", color: "#000" },
-  userSubText: { fontSize: 13, color: "#888" },
-  menuDivider: { height: 1, backgroundColor: "#eee", marginVertical: 10 },
+  userInfoSection: { paddingHorizontal: 20, paddingVertical: 10 },
+  userNameText: { fontSize: 18, fontWeight: "bold", color: "#0a3d62" },
+  menuDivider: { height: 1, backgroundColor: "#f0f0f0", marginVertical: 5 },
+  menuItem: {
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+  },
+  menuItemText: {
+    fontSize: 16,
+    color: "#333",
+  },
   logoutItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 15,
   },
-  logoutText: { marginLeft: 10, color: "#0a3d62", fontWeight: "bold" },
+  logoutText: {
+    marginLeft: 12,
+    color: "#0a3d62",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
 
-  // RESTO DE ESTILOS EXISTENTES
   header: {
     flexDirection: "row",
     alignItems: "center",

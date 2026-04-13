@@ -24,11 +24,11 @@ export const index = () => {
   const [password, setPassword] = useState("");
 
   function navegarRegistroUsuario() {
-    router.push({ pathname: "/Pantallas/registeruser" });
+    router.push({ pathname: "/screens/registeruser" });
   }
 
   function navegarForgotPassword() {
-    router.push({ pathname: "/Pantallas/forgotPassword" });
+    router.push({ pathname: "/screens/forgotPassword" });
   }
 
   async function hacerLogin() {
@@ -44,7 +44,7 @@ export const index = () => {
     // Si escriben 'admin' en ambos campos, van directo a la lista de admin
     if (email === "admin" && password === "admin") {
       setUsuario({ id: 0, nick: "Administrador" }); // Seteamos un usuario genérico de admin
-      router.push("/Pantallas/AdminActivityList");
+      router.push("/screens/AdminActivityList");
       return;
     }
 
@@ -61,7 +61,7 @@ export const index = () => {
     });
 
     // Si no es el "admin" maestro, va a la lista normal de usuarios
-    router.push("/Pantallas/ActivityList");
+    router.push("/screens/ActivityList");
   }
 
   return (
@@ -97,7 +97,11 @@ export const index = () => {
             style={styles.input}
             placeholder="EMAIL"
             placeholderTextColor="#888"
-            onChangeText={setEmail}
+            onChangeText={(text) => setEmail(text.trim())} // Elimina espacios accidentales
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            textContentType="emailAddress" // Ayuda al gestor de contraseñas de iOS/Android
           />
 
           <TextInput
@@ -106,6 +110,7 @@ export const index = () => {
             secureTextEntry={true}
             placeholderTextColor="#888"
             onChangeText={setPassword}
+            textContentType="password" // Ayuda al gestor de contraseñas
           />
 
           {/* Botón ENTRAR más potente */}
