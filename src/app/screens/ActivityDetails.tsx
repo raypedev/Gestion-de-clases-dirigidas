@@ -3,13 +3,14 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -18,6 +19,18 @@ import { actividades, inscripciones, usuarios } from "@/src/db/schema";
 import { and, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
+
+// Diccionario de Avatares (Asegúrate de que la ruta sea correcta según tus carpetas)
+const AVATARES: Record<string, any> = {
+  av1: require("@/assets/images/avatar1.png"),
+  av2: require("@/assets/images/avatar2.png"),
+  av3: require("@/assets/images/avatar3.png"),
+  av4: require("@/assets/images/avatar4.png"),
+  av5: require("@/assets/images/avatar5.png"),
+  av6: require("@/assets/images/avatar6.png"),
+  av7: require("@/assets/images/avatar7.png"),
+  av8: require("@/assets/images/avatar8.png"),
+};
 
 export const ActivityDetails = () => {
   const { id } = useLocalSearchParams();
@@ -47,12 +60,13 @@ export const ActivityDetails = () => {
         setInfoActividad(act[0]);
       }
 
-      // 2. Obtener usuarios mediante JOIN
+      // 2. Obtener usuarios mediante JOIN (Agregamos el campo avatar)
       const res = await drizzleDb
         .select({
           id: usuarios.id,
           nick: usuarios.nombre,
           email: usuarios.correo,
+          avatar: usuarios.avatar, // <--- IMPORTANTE: Traemos el avatar de la DB
         })
         .from(inscripciones)
         .innerJoin(usuarios, eq(inscripciones.usuarioId, usuarios.id))
@@ -66,7 +80,6 @@ export const ActivityDetails = () => {
     }
   };
 
-  // FUNCIÓN PARA CANCELAR RESERVA
   const cancelarReserva = (usuarioId: number, nombreUsuario: string) => {
     Alert.alert(
       "Cancelar Reserva",
@@ -87,7 +100,7 @@ export const ActivityDetails = () => {
                   ),
                 );
               Alert.alert("Éxito", "Reserva cancelada correctamente");
-              cargarDatos(); // Recargar la lista
+              cargarDatos();
             } catch (error) {
               console.error("Error al cancelar:", error);
               Alert.alert("Error", "No se pudo cancelar la reserva");
@@ -154,17 +167,28 @@ export const ActivityDetails = () => {
                 ) : (
                   usuariosInscritos.map((user) => (
                     <View key={user.id} style={styles.userRow}>
-                      <View style={styles.avatar}>
-                        <Text style={styles.avatarText}>
-                          {user.nick?.charAt(0).toUpperCase()}
-                        </Text>
+                      {/* CAMBIO: Ahora mostramos la imagen del avatar */}
+                      <View style={styles.avatarContainer}>
+                        {user.avatar && AVATARES[user.avatar] ? (
+                          <Image
+                            source={AVATARES[user.avatar]}
+                            style={styles.avatarImage}
+                          />
+                        ) : (
+                          // Fallback por si el usuario no tiene avatar o hay error
+                          <View style={styles.avatarFallback}>
+                            <Text style={styles.avatarText}>
+                              {user.nick?.charAt(0).toUpperCase()}
+                            </Text>
+                          </View>
+                        )}
                       </View>
+
                       <View style={styles.userInfo}>
                         <Text style={styles.userNick}>{user.nick}</Text>
                         <Text style={styles.userEmail}>{user.email}</Text>
                       </View>
 
-                      {/* BOTÓN PARA CANCELAR RESERVA */}
                       <TouchableOpacity
                         onPress={() => cancelarReserva(user.id, user.nick)}
                         style={styles.deleteButton}
@@ -216,9 +240,6 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     padding: 20,
     elevation: 8,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
   },
   loaderContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   infoBar: {
@@ -242,14 +263,24 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },
-  avatar: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
+  // Estilos nuevos para el avatar
+  avatarContainer: {
+    marginRight: 15,
+  },
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 1,
+    borderColor: "#eee",
+  },
+  avatarFallback: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
     backgroundColor: "#0a3d62",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 15,
   },
   avatarText: { color: "#fff", fontWeight: "bold", fontSize: 18 },
   userInfo: { flex: 1 },

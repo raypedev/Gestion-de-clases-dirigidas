@@ -7,6 +7,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Image,
   Modal,
   StyleSheet,
   Text,
@@ -22,6 +23,18 @@ import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
 
+// 1. DICCIONARIO DE AVATARES
+const AVATARES: Record<string, any> = {
+  av1: require("@/assets/images/avatar1.png"),
+  av2: require("@/assets/images/avatar2.png"),
+  av3: require("@/assets/images/avatar3.png"),
+  av4: require("@/assets/images/avatar4.png"),
+  av5: require("@/assets/images/avatar5.png"),
+  av6: require("@/assets/images/avatar6.png"),
+  av7: require("@/assets/images/avatar7.png"),
+  av8: require("@/assets/images/avatar8.png"),
+};
+
 export const UserList = () => {
   const { usuario, setUsuario } = useAppContext();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -30,6 +43,11 @@ export const UserList = () => {
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db);
+
+  // Avatar para mostrar DENTRO del modal
+  const avatarAdmin = usuario?.avatar
+    ? AVATARES[usuario.avatar]
+    : AVATARES["av1"];
 
   const cargarUsuarios = async () => {
     try {
@@ -79,27 +97,36 @@ export const UserList = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* ICONO DE PERFIL */}
+        {/* ICONO DE PERFIL (ESQUINA SUPERIOR DERECHA) - SOLO ICONO GRIS */}
         <TouchableOpacity
           style={styles.profileIconContainer}
           onPress={() => setMenuVisible(true)}
         >
           <MaterialCommunityIcons
             name="account-circle"
-            size={45}
+            size={55}
             color="#ccc"
           />
         </TouchableOpacity>
 
-        {/* MODAL DE MENÚ ACTUALIZADO */}
+        {/* MODAL DE MENÚ */}
         <Modal visible={menuVisible} transparent animationType="fade">
           <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
             <View style={styles.modalOverlay}>
               <View style={styles.dropdownMenu}>
                 <View style={styles.userInfoSection}>
-                  <Text style={styles.userNameText}>
-                    {usuario?.nick || "rayco"}
-                  </Text>
+                  <View style={styles.menuHeaderRow}>
+                    <View style={styles.avatarWrapper}>
+                      <MaterialCommunityIcons
+                        name="account-circle"
+                        size={45}
+                        color="#0a3d62"
+                      />
+                    </View>
+                    <Text style={styles.userNameText}>
+                      {usuario?.nick || "Administrador"}
+                    </Text>
+                  </View>
                 </View>
 
                 <View style={styles.menuDivider} />
@@ -122,7 +149,7 @@ export const UserList = () => {
                 >
                   <MaterialCommunityIcons
                     name="logout"
-                    size={20}
+                    size={22}
                     color="#0a3d62"
                   />
                   <Text style={styles.logoutText}>Cerrar sesión</Text>
@@ -150,11 +177,12 @@ export const UserList = () => {
               contentContainerStyle={{ paddingBottom: 20 }}
               renderItem={({ item }) => (
                 <View style={styles.userRow}>
-                  <View style={styles.avatarContainer}>
-                    <MaterialCommunityIcons
-                      name="account"
-                      size={28}
-                      color="#0a3d62"
+                  <View style={styles.avatarListContainer}>
+                    <Image
+                      source={
+                        item.avatar ? AVATARES[item.avatar] : AVATARES["av1"]
+                      }
+                      style={styles.avatarInList}
                     />
                   </View>
 
@@ -230,36 +258,44 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1 },
   profileIconContainer: {
     position: "absolute",
-    top: 50,
+    top: 40,
     right: 20,
     zIndex: 10,
   },
-  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.1)" },
+  modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.2)" },
   dropdownMenu: {
     position: "absolute",
     top: 100,
     right: 20,
     backgroundColor: "white",
-    borderRadius: 20,
-    width: 240,
-    paddingVertical: 10,
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-  },
-  userInfoSection: { paddingHorizontal: 20, paddingVertical: 10 },
-  userNameText: { fontSize: 18, fontWeight: "bold", color: "#0a3d62" },
-  menuDivider: { height: 1, backgroundColor: "#f0f0f0", marginVertical: 5 },
-  menuItem: {
-    paddingHorizontal: 20,
+    borderRadius: 25,
+    width: 250,
     paddingVertical: 15,
+    elevation: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
   },
-  menuItemText: {
-    fontSize: 16,
-    color: "#333",
+  userInfoSection: { paddingHorizontal: 20, paddingBottom: 10 },
+  menuHeaderRow: { flexDirection: "row", alignItems: "center" },
+  avatarWrapper: {
+    borderWidth: 1,
+    borderColor: "#eee",
+    borderRadius: 25,
+    padding: 2,
   },
+  avatarInsideMenu: { width: 45, height: 45, borderRadius: 22.5 },
+  userNameText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#0a3d62",
+    marginLeft: 15,
+    flexShrink: 1,
+  },
+  menuDivider: { height: 1, backgroundColor: "#f2f2f2", marginVertical: 8 },
+  menuItem: { paddingHorizontal: 20, paddingVertical: 15 },
+  menuItemText: { fontSize: 17, color: "#444", fontWeight: "500" },
   logoutItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -270,7 +306,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     color: "#0a3d62",
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 17,
   },
   header: { alignItems: "center", paddingVertical: 10, marginTop: 10 },
   headerTitle: { fontSize: 24, fontWeight: "900", color: "#0a3d62" },
@@ -298,14 +334,21 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },
-  avatarContainer: {
-    width: 45,
-    height: 45,
-    borderRadius: 22.5,
-    backgroundColor: "#e0f7f9",
+  avatarListContainer: {
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+    backgroundColor: "#f0f9fa",
     justifyContent: "center",
     alignItems: "center",
     marginRight: 15,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#e0f7f9",
+  },
+  avatarInList: {
+    width: "100%",
+    height: "100%",
   },
   textContainer: { flex: 1 },
   userName: { fontSize: 16, fontWeight: "bold", color: "#333" },

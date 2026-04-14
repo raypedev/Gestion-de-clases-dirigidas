@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export const index = () => {
+export const LoginScreen = () => {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
   const { setUsuario } = useAppContext();
@@ -32,36 +32,47 @@ export const index = () => {
   }
 
   async function hacerLogin() {
-    // 1. Obtener todos los usuarios de la DB
-    const resultado = await drizzleDb.select().from(usuarios).all();
+    try {
+      // 1. Obtener todos los usuarios de la DB
+      const resultado = await drizzleDb.select().from(usuarios).all();
 
-    // 2. Buscar si las credenciales coinciden
-    const usuarioEncontrado = resultado.find(
-      (u) => u.correo === email && u.password === password,
-    );
+      // 2. Buscar si las credenciales coinciden
+      const usuarioEncontrado = resultado.find(
+        (u) => u.correo === email && u.password === password,
+      );
 
-    // 3. CASO ESPECIAL: Hardcoded Admin (admin/admin)
-    // Si escriben 'admin' en ambos campos, van directo a la lista de admin
-    if (email === "admin" && password === "admin") {
-      setUsuario({ id: 0, nick: "Administrador" }); // Seteamos un usuario genérico de admin
-      router.push("/screens/AdminActivityList");
-      return;
+      // 3. CASO ESPECIAL: Admin (admin/admin)
+      if (email === "admin" && password === "admin") {
+        setUsuario({
+          id: 0,
+          nick: "Administrador",
+          avatar: "av1",
+        });
+        router.push("/screens/AdminActivityList");
+        return;
+      }
+
+      // 4. CASO NORMAL: Usuario de la Base de Datos
+      if (!usuarioEncontrado) {
+        Alert.alert("Error", "Credenciales incorrectas");
+        return;
+      }
+
+      // 5. GUARDAR EN EL CONTEXTO
+      // Usamos ?? "av1" para solucionar el error de 'string | null'
+      setUsuario({
+        id: usuarioEncontrado.id,
+        nick: usuarioEncontrado.nombre,
+        avatar: usuarioEncontrado.avatar ?? "av1",
+      });
+
+      // Navegar a la lista de actividades
+      router.push("/screens/ActivityList");
+    } catch (error) {
+      console.error(error);
+      // Este error suele saltar si la tabla no existe o la DB está bloqueada
+      Alert.alert("Error", "Hubo un problema al acceder a los datos.");
     }
-
-    // 4. CASO NORMAL: Usuario de la Base de Datos
-    if (!usuarioEncontrado) {
-      Alert.alert("Error", "Credenciales incorrectas");
-      return;
-    }
-
-    // Guardamos los datos en el contexto
-    setUsuario({
-      id: usuarioEncontrado.id,
-      nick: usuarioEncontrado.nombre,
-    });
-
-    // Si no es el "admin" maestro, va a la lista normal de usuarios
-    router.push("/screens/ActivityList");
   }
 
   return (
@@ -70,7 +81,6 @@ export const index = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* LOGO CON DEGRADADO */}
         <View style={styles.header}>
           <MaskedView
             style={styles.maskedView}
@@ -89,7 +99,6 @@ export const index = () => {
           </MaskedView>
         </View>
 
-        {/* TARJETA DE LOGIN RESALTADA */}
         <View style={styles.formCard}>
           <Text style={styles.cardTitle}>Bienvenido</Text>
 
@@ -97,11 +106,10 @@ export const index = () => {
             style={styles.input}
             placeholder="EMAIL"
             placeholderTextColor="#888"
-            onChangeText={(text) => setEmail(text.trim())} // Elimina espacios accidentales
+            onChangeText={(text) => setEmail(text.trim())}
             keyboardType="email-address"
             autoCapitalize="none"
             autoCorrect={false}
-            textContentType="emailAddress" // Ayuda al gestor de contraseñas de iOS/Android
           />
 
           <TextInput
@@ -110,10 +118,8 @@ export const index = () => {
             secureTextEntry={true}
             placeholderTextColor="#888"
             onChangeText={setPassword}
-            textContentType="password" // Ayuda al gestor de contraseñas
           />
 
-          {/* Botón ENTRAR más potente */}
           <TouchableOpacity style={styles.loginButton} onPress={hacerLogin}>
             <Text style={styles.loginButtonText}>ENTRAR</Text>
           </TouchableOpacity>
@@ -123,7 +129,6 @@ export const index = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            //onPress={navegarGuardarPersona}
             onPress={navegarRegistroUsuario}
             style={styles.registerBtn}
           >
@@ -138,40 +143,26 @@ export const index = () => {
   );
 };
 
-export default index;
+export default LoginScreen;
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-  },
-  safeArea: {
-    flex: 1,
-  },
-  header: {
-    flex: 1.5,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  maskedView: {
-    width: "100%",
-    height: 80,
-  },
+  mainContainer: { flex: 1 },
+  safeArea: { flex: 1 },
+  header: { flex: 1.5, justifyContent: "center", alignItems: "center" },
+  maskedView: { width: "100%", height: 80 },
   maskElementContainer: {
     backgroundColor: "transparent",
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  gradientFill: {
-    flex: 1,
-  },
+  gradientFill: { flex: 1 },
   logoText: {
     fontSize: 48,
     fontWeight: "900",
     fontStyle: "italic",
     letterSpacing: -2,
   },
-  // --- ESTILOS DE RESALTE ---
   formCard: {
     backgroundColor: "#FFFFFF",
     marginHorizontal: 25,
@@ -179,13 +170,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 25,
     paddingVertical: 35,
     borderRadius: 30,
-    // Sombra muy marcada (iOS)
+    elevation: 20,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 15 },
     shadowOpacity: 0.2,
     shadowRadius: 20,
-    // Sombra muy marcada (Android)
-    elevation: 20,
     borderWidth: 1,
     borderColor: "#f0f0f0",
   },
@@ -215,10 +204,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
     marginTop: 10,
-    shadowColor: "#0a3d62",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
     elevation: 8,
   },
   loginButtonText: {
@@ -227,20 +212,9 @@ const styles = StyleSheet.create({
     color: "#fff",
     letterSpacing: 2,
   },
-  forgotPassword: {
-    textAlign: "center",
-    marginTop: 20,
-    color: "#777",
-    fontSize: 14,
-  },
-  registerBtn: {
-    marginTop: 15,
-  },
-  registerText: {
-    textAlign: "center",
-    color: "#444",
-    fontSize: 14,
-  },
+  forgotPassword: { textAlign: "center", marginTop: 20, color: "#777" },
+  registerBtn: { marginTop: 15 },
+  registerText: { textAlign: "center", color: "#444" },
   registerLink: {
     fontWeight: "bold",
     color: "#0a3d62",

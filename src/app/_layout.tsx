@@ -7,16 +7,17 @@ import React, { Suspense } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import migrations from "../../drizzle/migrations";
 import AppContextProvider from "../context/AppContextProvider";
-import { actividades, inscripciones, usuarios } from "../db/schema"; // <--- Añadido actividades aquí
+import { actividades, inscripciones, usuarios } from "../db/schema";
 
-// Cambiamos el nombre a prueba5 para forzar una base de datos limpia sin errores de migración previos
-export const DATABASE_NAME = "prueba5Drizzle"; 
+// Cambiamos a prueba6 para forzar una base de datos nueva con la columna avatar
+export const DATABASE_NAME = "prueba6Drizzle";
 
 async function crearTablas(db: any) {
-  // Aseguramos que actividades esté en el schema del objeto drizzle
-  const drizzleDb = drizzle(db, { schema: { usuarios, inscripciones, actividades } });
+  const drizzleDb = drizzle(db, {
+    schema: { usuarios, inscripciones, actividades },
+  });
 
-  // Crear tabla usuarios si no existe
+  // 1. TABLA USUARIOS (Añadido el campo avatar)
   await drizzleDb.run(sql`
     CREATE TABLE IF NOT EXISTS usuarios (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,11 +25,12 @@ async function crearTablas(db: any) {
       dni TEXT,
       correo TEXT NOT NULL,
       password TEXT NOT NULL,
-      genero TEXT NOT NULL
+      genero TEXT NOT NULL,
+      avatar TEXT
     );
   `);
 
-  // Crear tabla inscripciones si no existe
+  // 2. TABLA INSCRIPCIONES
   await drizzleDb.run(sql`
     CREATE TABLE IF NOT EXISTS inscripciones (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +39,7 @@ async function crearTablas(db: any) {
     );
   `);
 
-  // --- NUEVA TABLA ACTIVIDADES ---
+  // 3. TABLA ACTIVIDADES
   await drizzleDb.run(sql`
     CREATE TABLE IF NOT EXISTS actividades (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,24 +50,23 @@ async function crearTablas(db: any) {
     );
   `);
 
-  // --- NUEVA TABLA ESTADISTICAS ---
+  // 4. TABLA ESTADISTICAS
   await drizzleDb.run(sql`
     CREATE TABLE IF NOT EXISTS estadisticas (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       nombre_pantalla TEXT NOT NULL,
-      usuario_id TEXT NOT NULL
+      usuario_id INTEGER NOT NULL
     );
   `);
 
-
-  console.log("Tablas aseguradas (usuarios, inscripciones y actividades)");
+  console.log("Tablas aseguradas con columna avatar");
 }
 
 function LoadingScreen() {
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <ActivityIndicator size="large" color="#0000ff" />
-      <Text>Cargando la app...</Text>
+      <ActivityIndicator size="large" color="#0a3d62" />
+      <Text style={{ marginTop: 10 }}>Configurando base de datos...</Text>
     </View>
   );
 }
@@ -80,21 +81,21 @@ export default function RootLayout() {
           useSuspense
           onInit={async (database) => {
             try {
-              // Inicializamos drizzle con todas las tablas
-              const db = drizzle(database, { schema: { usuarios, inscripciones, actividades } });
-              
-              // 1. Forzamos la creación manual para evitar fallos de "no such table"
-              await crearTablas(database); 
-              
-              // 2. Intentamos migrar el resto (si las migraciones fallan, las tablas manuales ya están listas)
+              const db = drizzle(database, {
+                schema: { usuarios, inscripciones, actividades },
+              });
+
+              // Ejecutamos la creación manual con la nueva columna
+              await crearTablas(database);
+
               try {
                 await migrate(db, migrations);
               } catch (migError) {
-                console.log("Aviso: Migraciones saltadas o ya aplicadas");
+                console.log("Migraciones saltadas");
               }
 
               await database.execAsync(`PRAGMA foreign_keys = ON`);
-              console.log("DB lista y configurada");
+              console.log("Base de datos prueba6 lista");
             } catch (error) {
               console.error("Error crítico en la DB", error);
             }

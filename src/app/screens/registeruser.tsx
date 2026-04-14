@@ -1,72 +1,53 @@
+import { useAppContext } from "@/src/context/AppContextProvider";
+import { usuarios } from "@/src/db/schema";
+import MaskedView from "@react-native-masked-view/masked-view";
+import { drizzle } from "drizzle-orm/expo-sqlite";
+import { LinearGradient } from "expo-linear-gradient";
+import { router, useFocusEffect } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
 import React, { useCallback, useState } from "react";
-
 import {
   Alert,
+  Image,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-
-import { usuarios } from "@/src/db/schema";
-
-import MaskedView from "@react-native-masked-view/masked-view";
-
-import { drizzle, useLiveQuery } from "drizzle-orm/expo-sqlite";
-
-import { LinearGradient } from "expo-linear-gradient";
-
-import { router, useFocusEffect } from "expo-router";
-
-import { useSQLiteContext } from "expo-sqlite";
-
-import { useAppContext } from "@/src/context/AppContextProvider";
-
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// 1. DICCIONARIO CON LOS 8 AVATARES
+const AVATARES: Record<string, any> = {
+  av1: require("@/assets/images/avatar1.png"),
+  av2: require("@/assets/images/avatar2.png"),
+  av3: require("@/assets/images/avatar3.png"),
+  av4: require("@/assets/images/avatar4.png"),
+  av5: require("@/assets/images/avatar5.png"),
+  av6: require("@/assets/images/avatar6.png"),
+  av7: require("@/assets/images/avatar7.png"),
+  av8: require("@/assets/images/avatar8.png"),
+};
+
 export const RegistroUsuario = () => {
-  // 1. Crear los estados para almacenar los valores
-
   const [textoNombre, setTextoNombre] = useState("");
-
   const [textoDNI, setTextoDNI] = useState("");
-
   const [textoMail, setTextoMail] = useState("");
-
   const [textoContraseña, setTextoContraseña] = useState("");
-
   const [genero, setGenero] = useState("");
+  const [avatarSeleccionado, setAvatarSeleccionado] = useState("av1");
 
-  const opcionesGenero = [
-    "Mujer",
-
-    "Hombre",
-
-    "No binario",
-
-    "Otros",
-
-    "Prefiero no decir",
-  ];
+  const opcionesGenero = ["Mujer", "Hombre", "Otros", "Prefiero no decir"];
 
   const db = useSQLiteContext();
-
   const drizzleDb = drizzle(db, { schema: { usuarios } });
 
-  // Este Hook siempre tiene la versión más reciente de la tabla.
-
-  // SE ACTUALIZA SOLO cuando detecta un insert/update/delete.
-
-  const { data: lista } = useLiveQuery(drizzleDb.select().from(usuarios));
-
   function navigateBack() {
-    router.push({ pathname: "/" }); // Vuelve a la pantalla principal
+    router.push({ pathname: "/" });
   }
 
   async function registrarPersona() {
-    // Validar que todos los campos estén llenos
-
     if (
       !textoNombre ||
       !textoDNI ||
@@ -75,41 +56,35 @@ export const RegistroUsuario = () => {
       !genero
     ) {
       Alert.alert("Error", "Por favor, rellena todos los campos");
-
       return;
     }
 
-    // Insertar en SQLite usando Drizzle
+    try {
+      await drizzleDb.insert(usuarios).values({
+        nombre: textoNombre,
+        dni: textoDNI,
+        correo: textoMail,
+        password: textoContraseña,
+        genero: genero,
+        avatar: avatarSeleccionado,
+      });
 
-    await drizzleDb.insert(usuarios).values({
-      nombre: textoNombre,
-
-      dni: textoDNI,
-
-      correo: textoMail,
-
-      password: textoContraseña,
-
-      genero: genero,
-    });
-
-    // Mostrar mensaje y volver al login
-
-    Alert.alert("Registro completado", "Usuario registrado correctamente", [
-      {
-        text: "OK",
-
-        onPress: () => router.push({ pathname: "/" }), // vuelve al login
-      },
-    ]);
+      Alert.alert("¡Bienvenido!", "Usuario registrado correctamente", [
+        { text: "OK", onPress: () => router.push({ pathname: "/" }) },
+      ]);
+    } catch (error) {
+      console.error(error);
+      Alert.alert(
+        "Error",
+        "Hubo un problema al registrar. Reinstala la app para actualizar la DB.",
+      );
+    }
   }
 
   const { registrarVisita } = useAppContext();
 
   useFocusEffect(
     useCallback(() => {
-      // Registramos la entrada a esta pantalla
-
       registrarVisita(db, "Registrar Usuario");
     }, []),
   );
@@ -120,119 +95,121 @@ export const RegistroUsuario = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* LOGO CON DEGRADADO */}
-
-        <View style={styles.header}>
-          <MaskedView
-            style={styles.maskedView}
-            maskElement={
-              <View style={styles.maskElementContainer}>
-                <Text style={styles.logoText}>VITALITYFIT</Text>
-              </View>
-            }
-          >
-            <LinearGradient
-              colors={["#0a3d62", "#3c6382", "#6edae8"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.gradientFill}
-            />
-          </MaskedView>
-        </View>
-
-        <View style={styles.formCard}>
-          {/* TARJETA DE REGISTRO */}
-
-          <Text style={styles.cardTitle}>Registro</Text>
-
-          <Text>Nombre: </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="Nombre"
-            onChangeText={setTextoNombre} // 4. Escucha cambios
-            placeholderTextColor="#888"
-          />
-
-          <Text>DNI: </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="DNI"
-            onChangeText={setTextoDNI}
-            placeholderTextColor="#888"
-          />
-
-          <Text>Correo electrónico: </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="mail"
-            onChangeText={setTextoMail}
-            placeholderTextColor="#888"
-          />
-
-          <Text>Contraseña: </Text>
-
-          <TextInput
-            style={styles.input}
-            placeholder="contraseña"
-            onChangeText={setTextoContraseña}
-            placeholderTextColor="#888"
-          />
-
-          {/* 4. SECCIÓN DE GÉNERO */}
-
-          <Text style={styles.label}>Género: </Text>
-
-          <View style={styles.genderContainer}>
-            {opcionesGenero.map((opcion) => {
-              const seleccionado = genero === opcion;
-
-              return (
-                <TouchableOpacity
-                  key={opcion}
-                  style={styles.genderOption}
-                  onPress={() => setGenero(opcion)}
-                  activeOpacity={0.7}
-                >
-                  <View
-                    style={[
-                      styles.circle,
-
-                      seleccionado && styles.circleSelected,
-                    ]}
-                  >
-                    {seleccionado && <View style={styles.innerCircle} />}
-                  </View>
-
-                  <Text
-                    style={[
-                      styles.genderLabel,
-
-                      seleccionado && styles.genderLabelSelected,
-                    ]}
-                  >
-                    {opcion}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <MaskedView
+              style={styles.maskedView}
+              maskElement={
+                <View style={styles.maskElementContainer}>
+                  <Text style={styles.logoText}>VITALITYFIT</Text>
+                </View>
+              }
+            >
+              <LinearGradient
+                colors={["#0a3d62", "#3c6382", "#6edae8"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.gradientFill}
+              />
+            </MaskedView>
           </View>
 
-          <TouchableOpacity
-            style={styles.loginButton}
-            onPress={registrarPersona}
-          >
-            <Text style={styles.loginButtonText}>Registrarse</Text>
-          </TouchableOpacity>
+          <View style={styles.formCard}>
+            <Text style={styles.cardTitle}>Crear Cuenta</Text>
 
-          <TouchableOpacity onPress={navigateBack}>
-            <Text style={styles.forgotPassword}>
-              Volver al inicio de sesión
-            </Text>
-          </TouchableOpacity>
-        </View>
+            {/* --- SELECTOR DE 8 AVATARES EN CUADRÍCULA --- */}
+            <Text style={styles.label}>Selecciona tu avatar:</Text>
+            <View style={styles.avatarGrid}>
+              {Object.keys(AVATARES).map((key) => (
+                <TouchableOpacity
+                  key={key}
+                  onPress={() => setAvatarSeleccionado(key)}
+                  style={[
+                    styles.avatarItem,
+                    avatarSeleccionado === key && styles.avatarItemSelected,
+                  ]}
+                >
+                  <Image source={AVATARES[key]} style={styles.avatarImg} />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.inputLabel}>Nombre completo</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Ej: Juan Pérez"
+              onChangeText={setTextoNombre}
+            />
+
+            <Text style={styles.inputLabel}>DNI</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="12345678X"
+              onChangeText={setTextoDNI}
+            />
+
+            <Text style={styles.inputLabel}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="correo@ejemplo.com"
+              onChangeText={setTextoMail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <Text style={styles.inputLabel}>Contraseña</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="••••••••"
+              onChangeText={setTextoContraseña}
+              secureTextEntry
+            />
+
+            <Text style={styles.label}>Género:</Text>
+            <View style={styles.genderContainer}>
+              {opcionesGenero.map((opcion) => {
+                const seleccionado = genero === opcion;
+                return (
+                  <TouchableOpacity
+                    key={opcion}
+                    style={styles.genderOption}
+                    onPress={() => setGenero(opcion)}
+                  >
+                    <View
+                      style={[
+                        styles.circle,
+                        seleccionado && styles.circleSelected,
+                      ]}
+                    >
+                      {seleccionado && <View style={styles.innerCircle} />}
+                    </View>
+                    <Text
+                      style={[
+                        styles.genderLabel,
+                        seleccionado && styles.genderLabelSelected,
+                      ]}
+                    >
+                      {opcion}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <TouchableOpacity
+              style={styles.loginButton}
+              onPress={registrarPersona}
+            >
+              <Text style={styles.loginButtonText}>REGISTRARSE</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={navigateBack}>
+              <Text style={styles.forgotPassword}>
+                ¿Ya tienes cuenta? Inicia sesión
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -241,255 +218,121 @@ export const RegistroUsuario = () => {
 export default RegistroUsuario;
 
 const styles = StyleSheet.create({
-  mainContainer: {
-    flex: 1,
-  },
-
-  safeArea: {
-    flex: 1,
-  },
-
+  mainContainer: { flex: 1 },
+  safeArea: { flex: 1 },
   header: {
-    flex: 1.5,
-
+    height: 100,
     justifyContent: "center",
-
     alignItems: "center",
+    marginTop: 10,
   },
-
-  maskedView: {
-    width: "100%",
-
-    height: 80,
-  },
-
+  maskedView: { width: "100%", height: 60 },
   maskElementContainer: {
     backgroundColor: "transparent",
-
     flex: 1,
-
     justifyContent: "center",
-
     alignItems: "center",
   },
-
-  gradientFill: {
-    flex: 1,
-  },
-
-  logoText: {
-    fontSize: 48,
-
-    fontWeight: "900",
-
-    fontStyle: "italic",
-
-    letterSpacing: -2,
-  },
-
-  // --- ESTILOS DE RESALTE ---
+  gradientFill: { flex: 1 },
+  logoText: { fontSize: 38, fontWeight: "900", fontStyle: "italic" },
 
   formCard: {
     backgroundColor: "#FFFFFF",
-
-    marginHorizontal: 25,
-
-    marginBottom: 60,
-
-    paddingHorizontal: 25,
-
-    paddingVertical: 35,
-
+    marginHorizontal: 20,
+    marginBottom: 30,
+    paddingHorizontal: 20,
+    paddingVertical: 25,
     borderRadius: 30,
-
-    shadowColor: "#000",
-
-    shadowOffset: { width: 0, height: 15 },
-
-    shadowOpacity: 0.2,
-
-    shadowRadius: 20,
-
-    elevation: 20,
-
-    borderWidth: 1,
-
-    borderColor: "#f0f0f0",
+    elevation: 10,
   },
-
   cardTitle: {
-    fontSize: 18,
-
-    fontWeight: "700",
-
-    color: "#333",
-
-    marginBottom: 20,
-
+    fontSize: 20,
+    fontWeight: "bold",
     textAlign: "center",
-
-    textTransform: "uppercase",
-
-    letterSpacing: 1,
+    color: "#0a3d62",
+    marginBottom: 20,
   },
 
+  // ESTILOS DE LA CUADRÍCULA DE 8 AVATARES
+  avatarGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap", // Esto hace que salten a la siguiente línea
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  avatarItem: {
+    margin: 5,
+    padding: 3,
+    borderRadius: 35,
+    borderWidth: 2,
+    borderColor: "transparent",
+  },
+  avatarItemSelected: {
+    borderColor: "#0a3d62",
+    backgroundColor: "#e0f7f9",
+  },
+  avatarImg: {
+    width: 55,
+    height: 55,
+    borderRadius: 27.5,
+  },
+
+  label: { fontSize: 15, fontWeight: "bold", color: "#555", marginBottom: 10 },
+  inputLabel: { fontSize: 13, color: "#777", marginBottom: 5, marginLeft: 5 },
   input: {
     backgroundColor: "#f8f9fa",
-
-    borderRadius: 15,
-
-    paddingVertical: 15,
-
-    paddingHorizontal: 20,
-
+    borderRadius: 12,
+    padding: 12,
     marginBottom: 15,
-
-    fontSize: 16,
-
     borderWidth: 1,
-
     borderColor: "#eee",
-
-    color: "#333",
   },
-
-  loginButton: {
-    backgroundColor: "#0a3d62",
-
-    borderRadius: 15,
-
-    paddingVertical: 16,
-
-    alignItems: "center",
-
-    marginTop: 10,
-
-    shadowColor: "#0a3d62",
-
-    shadowOffset: { width: 0, height: 5 },
-
-    shadowOpacity: 0.4,
-
-    shadowRadius: 10,
-
-    elevation: 8,
-  },
-
-  loginButtonText: {
-    fontSize: 18,
-
-    fontWeight: "bold",
-
-    color: "#fff",
-
-    letterSpacing: 2,
-  },
-
-  forgotPassword: {
-    textAlign: "center",
-
-    marginTop: 20,
-
-    color: "#777",
-
-    fontSize: 14,
-  },
-
-  registerBtn: {
-    marginTop: 15,
-  },
-
-  registerText: {
-    textAlign: "center",
-
-    color: "#444",
-
-    fontSize: 14,
-  },
-
-  registerLink: {
-    fontWeight: "bold",
-
-    color: "#0a3d62",
-
-    textDecorationLine: "underline",
-  },
-
-  // --- ESTILOS DE GÉNERO ---
-
-  label: {
-    fontSize: 14,
-
-    fontWeight: "bold",
-
-    color: "#555",
-
-    marginBottom: 8,
-
-    marginTop: 5,
-  },
-
   genderContainer: {
     flexDirection: "row",
-
+    flexWrap: "wrap",
     justifyContent: "space-between",
-
-    marginBottom: 20,
-
-    marginTop: 5,
+    marginBottom: 25,
   },
-
   genderOption: {
     alignItems: "center",
-
-    flex: 1,
+    width: "45%",
+    marginBottom: 10,
+    flexDirection: "row",
   },
-
   circle: {
-    width: 24,
-
-    height: 24,
-
-    borderRadius: 12,
-
-    backgroundColor: "#fff",
-
-    justifyContent: "center",
-
-    alignItems: "center",
-
+    width: 20,
+    height: 20,
+    borderRadius: 10,
     borderWidth: 2,
-
     borderColor: "#ccc",
-
-    marginBottom: 6,
+    marginRight: 8,
   },
-
-  circleSelected: {
-    borderColor: "#0a3d62",
-  },
-
+  circleSelected: { borderColor: "#0a3d62" },
   innerCircle: {
-    width: 12,
-
-    height: 12,
-
-    borderRadius: 6,
-
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: "#0a3d62",
   },
-
-  genderLabel: {
-    fontSize: 11,
-
-    color: "#888",
-
-    textAlign: "center",
+  genderLabel: { fontSize: 12, color: "#888" },
+  genderLabelSelected: { color: "#0a3d62", fontWeight: "bold" },
+  loginButton: {
+    backgroundColor: "#0a3d62",
+    borderRadius: 15,
+    paddingVertical: 15,
+    alignItems: "center",
+    elevation: 5,
   },
-
-  genderLabelSelected: {
-    color: "#0a3d62",
-
+  loginButtonText: {
+    color: "#fff",
     fontWeight: "bold",
+    fontSize: 16,
+    letterSpacing: 1,
+  },
+  forgotPassword: {
+    textAlign: "center",
+    marginTop: 20,
+    color: "#0a3d62",
+    fontWeight: "600",
   },
 });

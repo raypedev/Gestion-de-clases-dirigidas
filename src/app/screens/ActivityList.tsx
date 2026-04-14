@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Modal,
   ScrollView,
   StyleSheet,
@@ -19,17 +20,34 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// 1. DICCIONARIO DE AVATARES (Asegúrate de que las rutas sean correctas)
+const AVATARES: Record<string, any> = {
+  av1: require("@/assets/images/avatar1.png"),
+  av2: require("@/assets/images/avatar2.png"),
+  av3: require("@/assets/images/avatar3.png"),
+  av4: require("@/assets/images/avatar4.png"),
+  av5: require("@/assets/images/avatar5.png"),
+  av6: require("@/assets/images/avatar6.png"),
+  av7: require("@/assets/images/avatar7.png"),
+  av8: require("@/assets/images/avatar8.png"),
+};
+
 export const ListaActividades = () => {
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { inscripciones } });
-  const { usuario, setUsuario } = useAppContext();
+  const { usuario, setUsuario, registrarVisita } = useAppContext();
   const [menuVisible, setMenuVisible] = useState(false);
 
   // Estados para la carga de datos
   const [listaActividades, setListaActividades] = useState<any[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  // Cargar actividades desde SQLite
+  // --- LÓGICA DEL AVATAR ---
+  // Si el usuario tiene avatar lo usa, si no, pone el 'av1' por defecto
+  const avatarActual = usuario?.avatar
+    ? AVATARES[usuario.avatar]
+    : AVATARES["av1"];
+
   const cargarActividades = async () => {
     try {
       setCargando(true);
@@ -42,7 +60,6 @@ export const ListaActividades = () => {
     }
   };
 
-  // Función para volver atrás
   function volverAtras() {
     if (router.canGoBack()) {
       router.back();
@@ -62,7 +79,6 @@ export const ListaActividades = () => {
       Alert.alert("Error", "No hay usuario logueado");
       return;
     }
-
     try {
       const yaApuntado = await drizzleDb.select().from(inscripciones).all();
       const existe = yaApuntado.find(
@@ -102,11 +118,8 @@ export const ListaActividades = () => {
     cargarActividades();
   }, []);
 
-  const { registrarVisita } = useAppContext();
-
   useFocusEffect(
     useCallback(() => {
-      // Registramos la entrada a esta pantalla
       registrarVisita(db, "Lista de Actividades");
     }, [usuario]),
   );
@@ -117,16 +130,12 @@ export const ListaActividades = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
-        {/* ICONO DE PERFIL */}
+        {/* --- ICONO SUPERIOR DERECHA (EL QUE TE FALTA) --- */}
         <TouchableOpacity
           style={styles.profileIconContainer}
           onPress={() => setMenuVisible(true)}
         >
-          <MaterialCommunityIcons
-            name="account-circle"
-            size={45}
-            color="#ccc"
-          />
+          <Image source={avatarActual} style={styles.avatarTopRight} />
         </TouchableOpacity>
 
         {/* MODAL DEL MENÚ DESPLEGABLE */}
@@ -140,9 +149,16 @@ export const ListaActividades = () => {
             <View style={styles.modalOverlay}>
               <View style={styles.dropdownMenu}>
                 <View style={styles.userInfoSection}>
-                  <Text style={styles.userNameText}>
-                    {usuario?.nick || "Usuario"}
-                  </Text>
+                  <View style={styles.menuHeaderRow}>
+                    {/* AVATAR DENTRO DEL MENÚ */}
+                    <Image
+                      source={avatarActual}
+                      style={styles.avatarInsideMenu}
+                    />
+                    <Text style={styles.userNameText}>
+                      {usuario?.nick || "Usuario"}
+                    </Text>
+                  </View>
                 </View>
 
                 <View style={styles.menuDivider} />
@@ -249,7 +265,6 @@ export const ListaActividades = () => {
             </ScrollView>
           )}
 
-          {/* BOTÓN VOLVER ATRÁS */}
           <View style={styles.footer}>
             <TouchableOpacity onPress={volverAtras} style={styles.backButton}>
               <Text style={styles.backButtonText}>VOLVER ATRÁS</Text>
@@ -272,17 +287,39 @@ const styles = StyleSheet.create({
     right: 20,
     zIndex: 10,
   },
+  // ESTILO AVATAR ARRIBA DERECHA
+  avatarTopRight: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "#0a3d62",
+    backgroundColor: "#fff",
+  },
+  // ESTILO AVATAR DENTRO DEL MENÚ
+  avatarInsideMenu: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  menuHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.05)",
   },
   dropdownMenu: {
     position: "absolute",
-    top: 100,
+    top: 105,
     right: 20,
     backgroundColor: "white",
     borderRadius: 12,
-    width: 200,
+    width: 220,
     paddingVertical: 15,
     elevation: 15,
     shadowColor: "#000",
@@ -291,10 +328,10 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   userInfoSection: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 15,
     paddingBottom: 5,
   },
-  userNameText: { fontSize: 18, fontWeight: "bold", color: "#0a3d62" },
+  userNameText: { fontSize: 17, fontWeight: "bold", color: "#0a3d62" },
   menuDivider: { height: 1, backgroundColor: "#eee", marginVertical: 10 },
   menuItem: { paddingVertical: 10, paddingHorizontal: 20 },
   menuItemText: { fontSize: 15, color: "#333" },
@@ -331,13 +368,8 @@ const styles = StyleSheet.create({
     borderRadius: 40,
     padding: 20,
     elevation: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
   },
-  scrollContent: {
-    paddingBottom: 10,
-  },
+  scrollContent: { paddingBottom: 10 },
   activityRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -358,10 +390,7 @@ const styles = StyleSheet.create({
   activityName: { fontSize: 17, fontWeight: "bold", color: "#333" },
   activityTime: { fontSize: 13, color: "#777" },
   emptyText: { textAlign: "center", color: "#999", marginTop: 30 },
-  footer: {
-    marginTop: 15,
-    alignItems: "center",
-  },
+  footer: { marginTop: 15, alignItems: "center" },
   backButton: {
     backgroundColor: "#0a3d62",
     borderRadius: 20,
@@ -369,9 +398,5 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
   },
-  backButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
+  backButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
 });
