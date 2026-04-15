@@ -50,7 +50,7 @@ export const ListaActividades = () => {
 
   const verReservas = (id: number) => {
     router.push({
-      pathname: "/screens/ActivityDetails",
+      pathname: "/screens/Administrator/ActivityDetails",
       params: { id: id },
     });
   };
@@ -116,7 +116,7 @@ export const ListaActividades = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/screens/Estadistics");
+                    router.push("/screens/Administrator/Estadistics");
                   }}
                 >
                   <Text style={styles.menuItemText}>Estadísticas</Text>
@@ -205,13 +205,13 @@ export const ListaActividades = () => {
           <View style={styles.footer}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => router.push("/screens/addActivity")}
+              onPress={() => router.push("/screens/Administrator/AddActivity")}
             >
               <Text style={styles.actionButtonText}>AÑADIR ACTIVIDAD</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.actionButton, styles.buttonSeparator]}
-              onPress={() => router.push("/screens/userList")}
+              onPress={() => router.push("/screens/Administrator/UserList")}
             >
               <Text style={styles.actionButtonText}>USUARIOS REGISTRADOS</Text>
             </TouchableOpacity>

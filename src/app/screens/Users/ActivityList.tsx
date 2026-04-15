@@ -167,7 +167,7 @@ export const ListaActividades = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/screens/UserProfile");
+                    router.push("/screens/Users/UserProfile");
                   }}
                 >
                   <Text style={styles.menuItemText}>Mi perfil</Text>
@@ -177,7 +177,7 @@ export const ListaActividades = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/screens/MyActivities");
+                    router.push("/screens/Users/MyActivities");
                   }}
                 >
                   <Text style={styles.menuItemText}>Mis actividades</Text>
@@ -187,7 +187,7 @@ export const ListaActividades = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/screens/Help");
+                    router.push("/screens/Users/Help");
                   }}
                 >
                   <Text style={styles.menuItemText}>Ayuda</Text>

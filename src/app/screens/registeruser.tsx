@@ -95,6 +95,11 @@ export const RegistroUsuario = () => {
       style={styles.mainContainer}
     >
       <SafeAreaView style={styles.safeArea}>
+        {/* BOTÓN VOLVER ATRÁS */}
+        <TouchableOpacity style={styles.backButton} onPress={navigateBack}>
+          <Text style={styles.backButtonText}>← Volver</Text>
+        </TouchableOpacity>
+
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
             <MaskedView
@@ -220,6 +225,16 @@ export default RegistroUsuario;
 const styles = StyleSheet.create({
   mainContainer: { flex: 1 },
   safeArea: { flex: 1 },
+  backButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    alignSelf: "flex-start",
+  },
+  backButtonText: {
+    color: "#0a3d62",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
   header: {
     height: 100,
     justifyContent: "center",
@@ -256,7 +271,7 @@ const styles = StyleSheet.create({
   // ESTILOS DE LA CUADRÍCULA DE 8 AVATARES
   avatarGrid: {
     flexDirection: "row",
-    flexWrap: "wrap", // Esto hace que salten a la siguiente línea
+    flexWrap: "wrap",
     justifyContent: "center",
     marginBottom: 20,
   },

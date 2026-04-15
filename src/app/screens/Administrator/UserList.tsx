@@ -135,7 +135,7 @@ export const UserList = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/screens/Estadistics");
+                    router.push("/screens/Administrator/Estadistics");
                   }}
                 >
                   <Text style={styles.menuItemText}>Estadísticas</Text>
@@ -198,7 +198,7 @@ export const UserList = () => {
                     <TouchableOpacity
                       onPress={() =>
                         router.push({
-                          pathname: "/screens/editUser",
+                          pathname: "/screens/Administrator/EditUser",
                           params: { id: item.id },
                         })
                       }
@@ -234,7 +234,7 @@ export const UserList = () => {
           <View style={styles.footer}>
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={() => router.push("/screens/registeruser")}
+              onPress={() => router.push("/screens/RegisterUser")}
             >
               <Text style={styles.actionButtonText}>AÑADIR USUARIO</Text>
             </TouchableOpacity>

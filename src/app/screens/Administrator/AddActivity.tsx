@@ -110,7 +110,7 @@ export const AnadirActividad = () => {
                   style={styles.menuItem}
                   onPress={() => {
                     setMenuVisible(false);
-                    router.push("/screens/Estadistics");
+                    router.push("/screens/Administrator/Estadistics");
                   }}
                 >
                   <Text style={styles.menuItemText}>Estadísticas</Text>

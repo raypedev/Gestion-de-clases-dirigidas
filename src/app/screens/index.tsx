@@ -24,11 +24,11 @@ export const LoginScreen = () => {
   const [password, setPassword] = useState("");
 
   function navegarRegistroUsuario() {
-    router.push({ pathname: "/screens/registeruser" });
+    router.push({ pathname: "/screens/RegisterUser" });
   }
 
   function navegarForgotPassword() {
-    router.push({ pathname: "/screens/forgotPassword" });
+    router.push({ pathname: "/screens/ForgotPassword" });
   }
 
   async function hacerLogin() {
@@ -48,7 +48,7 @@ export const LoginScreen = () => {
           nick: "Administrador",
           avatar: "av1",
         });
-        router.push("/screens/AdminActivityList");
+        router.push("/screens/Administrator/AdminActivityList");
         return;
       }
 
@@ -67,7 +67,7 @@ export const LoginScreen = () => {
       });
 
       // Navegar a la lista de actividades
-      router.push("/screens/ActivityList");
+      router.push("/screens/Users/ActivityList");
     } catch (error) {
       console.error(error);
       // Este error suele saltar si la tabla no existe o la DB está bloqueada
