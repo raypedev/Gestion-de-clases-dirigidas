@@ -38,7 +38,7 @@ export const RegistroUsuario = () => {
   const [genero, setGenero] = useState("");
   const [avatarSeleccionado, setAvatarSeleccionado] = useState("av1");
 
-  const opcionesGenero = ["Mujer", "Hombre", "Otros", "Prefiero no decir"];
+  const opcionesGenero = ["Femenino", "Masculino", "No binario", "Prefiero no decir", "Otro"];
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });

@@ -49,10 +49,11 @@ export default function UserProfile() {
 
   // Géneros actualizados (sin no binario)
   const opcionesGenero = [
-    { label: "Mujer", value: "Mujer" },
-    { label: "Hombre", value: "Hombre" },
-    { label: "Otros", value: "Otros" },
+    { label: "Femenino", value: "Femenino" },
+    { label: "Masculino", value: "Masculino" },
+    { label: "No binario", value: "No binario" },
     { label: "Prefiero no decir", value: "Prefiero no decir" },
+    { label: "Otro", value: "Otro" },
   ];
 
   useEffect(() => {

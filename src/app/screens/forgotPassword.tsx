@@ -40,7 +40,7 @@ export const ForgotPassword = () => {
 
     if (resultado.length > 0) {
       const pass = resultado[0].password;
-      Alert.alert("Correo enviado a ", pass);
+      Alert.alert("Contraseña: ", pass);
     } else {
       Alert.alert("Error", "No se encontró ningún usuario con ese correo");
     }
@@ -82,7 +82,7 @@ export const ForgotPassword = () => {
             style={styles.sendButton}
             onPress={mostrarContraseña}
           >
-            <Text style={styles.sendButtonText}>Enviar correo</Text>
+            <Text style={styles.sendButtonText}>Mostrar contraseña</Text>
           </TouchableOpacity>
 
           <TouchableOpacity onPress={navigateBack}>

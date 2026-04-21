@@ -48,9 +48,11 @@ export const EditUser = () => {
   const [avatar, setAvatar] = useState("av1");
 
   const opcionesGenero = [
-    { label: "Mujer", value: "Mujer" },
-    { label: "Hombre", value: "Hombre" },
+    { label: "Femenino", value: "Femenino" },
+    { label: "Masculino", value: "Masculino" },
+    { label: "No binario", value: "No binario" },
     { label: "Prefiero no decir", value: "Prefiero no decir" },
+    { label: "Otro", value: "Otro" },
   ];
 
   useEffect(() => {

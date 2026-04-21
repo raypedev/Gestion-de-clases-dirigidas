@@ -11,11 +11,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { BarChart } from "react-native-chart-kit";
+import { BarChart, PieChart } from "react-native-chart-kit";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // --- BASE DE DATOS ---
 import { estadisticas } from "@/src/db/schema";
+import { usuarios } from "@/src/db/schema"; 
 import { desc, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/expo-sqlite";
 import { useSQLiteContext } from "expo-sqlite";
@@ -29,6 +30,7 @@ export const Estadisticas = () => {
   const [cargando, setCargando] = useState(true);
   const [statsPantallas, setStatsPantallas] = useState<any[]>([]);
   const [totalAppVisitas, setTotalAppVisitas] = useState(0);
+  const [statsGenero, setStatsGenero] = useState<any[]>([]);
 
   const cargarDatos = async () => {
     try {
@@ -46,6 +48,32 @@ export const Estadisticas = () => {
         .select({ total: sql<number>`CAST(count(*) AS INTEGER)` })
         .from(estadisticas);
 
+
+        const resGenero = await drizzleDb
+      .select({
+        genero: usuarios.genero,
+        cantidad: sql<number>`CAST(count(${usuarios.id}) AS INTEGER)`,
+      })
+      .from(usuarios)
+      .groupBy(usuarios.genero);
+
+      const colores: Record<string, string> = {
+        "Masculino": "#0a3d62",
+        "Femenino": "#6edae8",
+        "No binario": "#f39c12",
+        "Prefiero no decirlo": "#e74c3c",
+        "Otro": "#f1c40f"
+      };
+
+      const dataPie = resGenero.map((item) => ({
+        name: item.genero,
+        population: item.cantidad,
+        color: colores[item.genero] || "#ccc",
+        legendFontColor: "#7f7f7f",
+        legendFontSize: 12,
+      }));
+
+      setStatsGenero(dataPie);
       setStatsPantallas(resPantallas);
       setTotalAppVisitas(totalVisitas[0]?.total || 0);
     } catch (error) {
@@ -62,10 +90,13 @@ export const Estadisticas = () => {
   );
 
   const dataGrafica = {
-    labels:
-      statsPantallas.length > 0
-        ? statsPantallas.slice(0, 5).map((s) => s.nombre_pantalla.split(" ")[0])
-        : ["..."],
+   labels: statsPantallas.length > 0
+    ? statsPantallas.slice(0, 5).map((s) => {
+        const nombre = s.nombre_pantalla;
+        // Si es muy largo, lo cortamos a 8-10 caracteres
+        return nombre.length > 10 ? nombre.substring(0, 8) + ".." : nombre;
+      })
+    : ["..."],
     datasets: [
       {
         data:
@@ -91,7 +122,7 @@ export const Estadisticas = () => {
   };
 
   return (
-    <LinearGradient colors={["#0a3d62", "#1e3799"]} style={styles.container}>
+    <LinearGradient colors={["#0a3d62", "#e0f7f9"]} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         {/* HEADER */}
         <View style={styles.header}>
@@ -135,11 +166,11 @@ export const Estadisticas = () => {
                 <BarChart
                   data={dataGrafica}
                   width={screenWidth - 60}
-                  height={220}
+                  height={240}
                   yAxisLabel="" // <--- SOLUCIÓN AL ERROR
                   yAxisSuffix="" // <--- SOLUCIÓN AL ERROR
                   chartConfig={chartConfig}
-                  verticalLabelRotation={0}
+                  verticalLabelRotation={20}
                   fromZero
                   showValuesOnTopOfBars
                   style={styles.chartStyle}
@@ -187,6 +218,35 @@ export const Estadisticas = () => {
                 </View>
               </View>
             ))}
+
+            {/* GRÁFICA DE GÉNERO */}
+            <View style={styles.chartCard}>
+              <View style={styles.chartHeader}>
+                <MaterialCommunityIcons
+                  name="account-group-outline"
+                  size={22}
+                  color="#0a3d62"
+                />
+                <Text style={styles.chartTitle}>Distribución por Género</Text>
+              </View>
+
+              {statsGenero.length > 0 ? (
+                <PieChart
+                  data={statsGenero}
+                  width={screenWidth - 40}
+                  height={180}
+                  chartConfig={chartConfig}
+                  accessor={"population"}
+                  backgroundColor={"transparent"}
+                  paddingLeft={"15"}
+                  center={[10, 0]} // Ajusta esto para centrar el círculo
+                  absolute // Muestra el número absoluto en lugar de porcentaje
+                />
+              ) : (
+                <Text style={{ marginTop: 20, color: "#888" }}>No hay datos de usuarios</Text>
+              )}
+            </View>
+
           </ScrollView>
         )}
       </SafeAreaView>
@@ -226,7 +286,8 @@ const styles = StyleSheet.create({
   chartCard: {
     backgroundColor: "white",
     borderRadius: 32,
-    padding: 20,
+    paddingVertical:30,   // Cambiamos padding general por vertical
+    paddingHorizontal: 10, // Menos padding horizontal para dar espacio a la gráfica
     alignItems: "center",
     shadowColor: "#000",
     shadowOpacity: 0.15,
@@ -246,7 +307,7 @@ const styles = StyleSheet.create({
     color: "#0a3d62",
     marginLeft: 8,
   },
-  chartStyle: { borderRadius: 20, paddingRight: 40, marginTop: 10 },
+  chartStyle: { borderRadius: 20, paddingRight: 40, paddingLeft: 40, marginTop: 10, marginBottom: -20 },
 
   sectionHeader: {
     flexDirection: "row",
