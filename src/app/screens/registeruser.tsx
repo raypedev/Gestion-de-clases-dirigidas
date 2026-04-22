@@ -18,7 +18,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// 1. DICCIONARIO CON LOS 8 AVATARES
 const AVATARES: Record<string, any> = {
   av1: require("@/assets/images/avatar1.png"),
   av2: require("@/assets/images/avatar2.png"),
@@ -38,7 +37,13 @@ export const RegistroUsuario = () => {
   const [genero, setGenero] = useState("");
   const [avatarSeleccionado, setAvatarSeleccionado] = useState("av1");
 
-  const opcionesGenero = ["Femenino", "Masculino", "No binario", "Prefiero no decir", "Otro"];
+  const opcionesGenero = [
+    "Femenino",
+    "Masculino",
+    "No binario",
+    "Prefiero no decir",
+    "Otro",
+  ];
 
   const db = useSQLiteContext();
   const drizzleDb = drizzle(db, { schema: { usuarios } });
